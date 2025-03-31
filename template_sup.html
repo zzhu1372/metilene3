@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Metilene Report</title>
+    <style>
+        /* Optional: Style for the pop-up */
+        .popup {
+          display: none;
+          position: fixed;
+          top: 50%;
+          left: 50%;
+          height:50%;
+          width:50%;
+          transform: translate(-50%, -50%);
+          padding: 20px;
+          background-color: #fff;
+          box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+          z-index: 1000;
+          overflow-y: scroll !important;
+        }
+    </style>
+</head>
+<body>
+    <h2>Metilene Report for XXX</h2>
+
+    <h3>History</h3>
+    <div>Command: XXX</div><br>
+    <div>Version: XXX</div><br>
+    <div>Parameters: XXX</div><br>
+    <div>Start time: XXX</div><br>
+    <div>End time: XXX</div><br><br>
+
+    
+    <h3>Supervised</h3>
+    <div>Number of supervised DMRs: XXX</div><br>
+    <div id="pandas_table_placeholder_dmr_sup"></div><br><br>
+    
+    <div id="gsea_placeholder"></div>
+</body>
+
+<script>
+  // JavaScript functions to show and hide the pop-up
+  function showPopup(popupId) {
+      document.getElementById(popupId).style.display = 'block';
+  }
+  function hidePopup(popupId) {
+      document.getElementById(popupId).style.display = 'none';
+  }
+</script>
+    
+</html>
