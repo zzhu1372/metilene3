@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 import os
 import sys
 import time
@@ -71,7 +72,16 @@ def preprocess(args, headerfile, ifsup, grpinfo=None):
         cols.to_csv(headerfile, sep='\t', index=False)
         
     else:
+        cols = pd.read_table(args.input, nrows=0)
+        newcols = list(cols.columns)
+        
         grp = pd.read_table(grpinfo, index_col='ID')['Group'].astype(str)
+        try:
+            grp = grp.loc[newcols[2:]]
+        except:
+            print('ERROR: group information table is not matched!')
+            return
+
         grpid = {}
         j = 0
         for i in sorted(grp.unique()):
@@ -84,8 +94,7 @@ def preprocess(args, headerfile, ifsup, grpinfo=None):
         df_grpid.to_csv(args.output+'/group-ID.tsv', sep='\t')
         
         grpdict = grp.map(grpid).to_dict()
-        cols = pd.read_table(args.input, nrows=0)
-        newcols = list(cols.columns)
+        
         # print(newcols)
         for i in range(len(newcols))[2:]:
             newcols[i] = str(grpdict[newcols[i]])+'_Sample'+str(i-2)#+'_'+newcols[i]
@@ -285,16 +294,10 @@ def processOutput(args, ifsup, anno='F'):
 
     # print('# of processed DMRs:',mout.shape[0])
     if anno == 'T' and args.annotation:
-        try:
-            mout = chipseeker(mout, moutPath, args.annotation)
-        except:
-            print('ERROR: Failed to annotate DMRs. Please check if you have installed R packages: ChIPseeker and annotation package for TxDb object (e.g., hg19, hg38, or mm10).')
+        mout = chipseeker(mout, moutPath, args.annotation)
 
     if anno == 'T' and args.refSeq:
-        try:
-            mout = addSeq(mout, args.refSeq)
-        except:
-            print('ERROR: Failed to annotate DMRs with the reference.')
+        mout = addSeq(mout, args.refSeq)
 
     mout.to_csv(moutPath, index=False, sep='\t')
                     
