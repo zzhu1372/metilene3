@@ -158,7 +158,7 @@ def runMetilene(args, headerfile, ifsup):
                         args.output+'/'+args.input.split('/')[-1]+'.imputed')
                         
             os.system("grep \'//Imputed:\' "+\
-            args.output+'/'+args.input.split('/')[-1]+r".aout|sed \"s/\/\/Imputed://\" >>" + \
+            args.output+'/'+args.input.split('/')[-1]+r".aout|sed 's/\/\/Imputed://' >>" + \
             args.output+'/'+args.input.split('/')[-1]+'.imputed')
             
             os.system("rm "+args.output+'/'+args.input.split('/')[-1]+'.aout')
