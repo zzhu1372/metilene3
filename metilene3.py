@@ -989,7 +989,7 @@ def report_sup(args, start_time, end_time, mout):
         template_content = template_file.read()
 
     final_html = template_content.replace('<h2>Metilene Report for XXX</h2>', '<h2>Metilene Report for '+args.input.split('/')[-1]+'</h2>')
-    final_html = final_html.replace('<div>Version: XXX</div><br>', '<div>Version: '+str()+'</div><br>')
+    final_html = final_html.replace('<div>Version: XXX</div><br>', '<div>Version: '+str(VERSION)+'</div><br>')
     final_html = final_html.replace('<div>Command: XXX</div><br>', '<div>Command: '+''.join([i+' ' for i in sys.argv])+'</div><br>')
     final_html = final_html.replace('<div>Parameters: XXX</div><br>', '<div>Parameters: <br>'+str(args).split('Namespace')[-1][1:-1].split(', skipMetilene')[0]+'</div><br>')
     final_html = final_html.replace('<div>Start time: XXX</div><br>', '<div>Start time: '+str(start_time)+'</div>')
@@ -1013,7 +1013,7 @@ def report_wosup(args, start_time, end_time, unmout, finalCls):
         template_content = template_file.read()
 
     final_html = template_content.replace('<h2>Metilene Report for XXX</h2>', '<h2>Metilene Report for '+args.input.split('/')[-1]+'</h2>')
-    final_html = final_html.replace('<div>Version: XXX</div><br>', '<div>Version: '+str()+'</div><br>')
+    final_html = final_html.replace('<div>Version: XXX</div><br>', '<div>Version: '+str(VERSION)+'</div><br>')
     final_html = final_html.replace('<div>Command: XXX</div><br>', '<div>Command: '+''.join([i+' ' for i in sys.argv])+'</div><br>')
     final_html = final_html.replace('<div>Parameters: XXX</div><br>', '<div>Parameters: <br>'+str(args).split('Namespace')[-1][1:-1].split(', skipMetilene')[0]+'</div><br>')
     final_html = final_html.replace('<div>Start time: XXX</div><br>', '<div>Start time: '+str(start_time)+'</div>')
@@ -1044,7 +1044,7 @@ def report_nocls(args, start_time, end_time, unmout):
         template_content = template_file.read()
 
     final_html = template_content.replace('<h2>Metilene Report for XXX</h2>', '<h2>Metilene Report for '+args.input.split('/')[-1]+'</h2>')
-    final_html = final_html.replace('<div>Version: XXX</div><br>', '<div>Version: '+str()+'</div><br>')
+    final_html = final_html.replace('<div>Version: XXX</div><br>', '<div>Version: '+str(VERSION)+'</div><br>')
     final_html = final_html.replace('<div>Command: XXX</div><br>', '<div>Command: '+''.join([i+' ' for i in sys.argv])+'</div><br>')
     final_html = final_html.replace('<div>Parameters: XXX</div><br>', '<div>Parameters: <br>'+str(args).split('Namespace')[-1][1:-1].split(', skipMetilene')[0]+'</div><br>')
     final_html = final_html.replace('<div>Start time: XXX</div><br>', '<div>Start time: '+str(start_time)+'</div>')
