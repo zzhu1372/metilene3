@@ -8,7 +8,7 @@ import pandas as pd
 import warnings
 warnings.filterwarnings('ignore')
 
-metilene_ver = 3.0
+VERSION = 3.0
 
 ###################################################################################################
 # Input
@@ -40,6 +40,7 @@ parser.add_argument('-anno', "--annotation", help='(optional) hg19 or hg38, use 
 parser.add_argument('-refs', "--refSeq", help='(optional) reference genome, for sequence annotation',)
 parser.add_argument('-gsea', "--genesets", help='(optional) geneset gmt file for GSEA',)
 parser.add_argument('-wsup', "--withSupervised", type=lambda x: (str(x).lower() == 'true'), default=True)
+parser.add_argument('--version', action='version', version=f'%(prog)s {VERSION}', help='Get the version of metilene3',)
 
 # hidden
 parser.add_argument('-sk', "--skipMetilene", type=lambda x: (str(x).lower() == 'true'), default=False, help=argparse.SUPPRESS)
@@ -952,7 +953,7 @@ def report_unsup(args, start_time, end_time, unmout, finalCls, mout):
         template_content = template_file.read()
 
     final_html = template_content.replace('<h2>Metilene Report for XXX</h2>', '<h2>Metilene Report for '+args.input.split('/')[-1]+'</h2>')
-    final_html = final_html.replace('<div>Version: XXX</div><br>', '<div>Version: '+str(metilene_ver)+'</div><br>')
+    final_html = final_html.replace('<div>Version: XXX</div><br>', '<div>Version: '+str(VERSION)+'</div><br>')
     final_html = final_html.replace('<div>Command: XXX</div><br>', '<div>Command: '+''.join([i+' ' for i in sys.argv])+'</div><br>')
     final_html = final_html.replace('<div>Parameters: XXX</div><br>', '<div>Parameters: <br>'+str(args).split('Namespace')[-1][1:-1].split(', skipMetilene')[0]+'</div><br>')
     final_html = final_html.replace('<div>Start time: XXX</div><br>', '<div>Start time: '+str(start_time)+'</div>')
@@ -988,7 +989,7 @@ def report_sup(args, start_time, end_time, mout):
         template_content = template_file.read()
 
     final_html = template_content.replace('<h2>Metilene Report for XXX</h2>', '<h2>Metilene Report for '+args.input.split('/')[-1]+'</h2>')
-    final_html = final_html.replace('<div>Version: XXX</div><br>', '<div>Version: '+str(metilene_ver)+'</div><br>')
+    final_html = final_html.replace('<div>Version: XXX</div><br>', '<div>Version: '+str()+'</div><br>')
     final_html = final_html.replace('<div>Command: XXX</div><br>', '<div>Command: '+''.join([i+' ' for i in sys.argv])+'</div><br>')
     final_html = final_html.replace('<div>Parameters: XXX</div><br>', '<div>Parameters: <br>'+str(args).split('Namespace')[-1][1:-1].split(', skipMetilene')[0]+'</div><br>')
     final_html = final_html.replace('<div>Start time: XXX</div><br>', '<div>Start time: '+str(start_time)+'</div>')
@@ -1012,7 +1013,7 @@ def report_wosup(args, start_time, end_time, unmout, finalCls):
         template_content = template_file.read()
 
     final_html = template_content.replace('<h2>Metilene Report for XXX</h2>', '<h2>Metilene Report for '+args.input.split('/')[-1]+'</h2>')
-    final_html = final_html.replace('<div>Version: XXX</div><br>', '<div>Version: '+str(metilene_ver)+'</div><br>')
+    final_html = final_html.replace('<div>Version: XXX</div><br>', '<div>Version: '+str()+'</div><br>')
     final_html = final_html.replace('<div>Command: XXX</div><br>', '<div>Command: '+''.join([i+' ' for i in sys.argv])+'</div><br>')
     final_html = final_html.replace('<div>Parameters: XXX</div><br>', '<div>Parameters: <br>'+str(args).split('Namespace')[-1][1:-1].split(', skipMetilene')[0]+'</div><br>')
     final_html = final_html.replace('<div>Start time: XXX</div><br>', '<div>Start time: '+str(start_time)+'</div>')
@@ -1043,7 +1044,7 @@ def report_nocls(args, start_time, end_time, unmout):
         template_content = template_file.read()
 
     final_html = template_content.replace('<h2>Metilene Report for XXX</h2>', '<h2>Metilene Report for '+args.input.split('/')[-1]+'</h2>')
-    final_html = final_html.replace('<div>Version: XXX</div><br>', '<div>Version: '+str(metilene_ver)+'</div><br>')
+    final_html = final_html.replace('<div>Version: XXX</div><br>', '<div>Version: '+str()+'</div><br>')
     final_html = final_html.replace('<div>Command: XXX</div><br>', '<div>Command: '+''.join([i+' ' for i in sys.argv])+'</div><br>')
     final_html = final_html.replace('<div>Parameters: XXX</div><br>', '<div>Parameters: <br>'+str(args).split('Namespace')[-1][1:-1].split(', skipMetilene')[0]+'</div><br>')
     final_html = final_html.replace('<div>Start time: XXX</div><br>', '<div>Start time: '+str(start_time)+'</div>')
@@ -1100,8 +1101,8 @@ def checkParams(args):
 
 def main():
     start_time = time.ctime()
-    print(start_time,": Started.")
     args = parser.parse_args()
+    print(start_time,": Started.")
     # print(args)
     msg = checkParams(args)
     if msg:
