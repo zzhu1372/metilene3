@@ -157,7 +157,7 @@ def runMetilene(args, headerfile, ifsup):
                         args.output+'/'+args.input.split('/')[-1]+'.imputed')
                         
             os.system("grep \'//Imputed:\' "+\
-            args.output+'/'+args.input.split('/')[-1]+".aout|sed \"s/\/\/Imputed://\" >>" + \
+            args.output+'/'+args.input.split('/')[-1]+r".aout|sed \"s/\/\/Imputed://\" >>" + \
             args.output+'/'+args.input.split('/')[-1]+'.imputed')
             
             os.system("rm "+args.output+'/'+args.input.split('/')[-1]+'.aout')
@@ -743,9 +743,9 @@ def DMRtable(args, finalCls, mout, unmout=None):
             table = pd.DataFrame(mout['sig.comparison'].value_counts()[:10])
             table.columns = ['#DMRs']
         else:
-            table = pd.DataFrame([dmrs['DMTree'].str.contains(('P'+i+',').replace('|','\|')).sum() for i in finalCls.columns[1:]], list(finalCls.columns[1:]))
+            table = pd.DataFrame([dmrs['DMTree'].str.contains(('P'+i+',').replace('|',r'\|')).sum() for i in finalCls.columns[1:]], list(finalCls.columns[1:]))
             table.columns = ['#DMRs_hypo_in_left']
-            table['#DMRs_hypo_in_right'] = [dmrs['DMTree'].str.contains(('N'+i+',').replace('|','\|')).sum() for i in table.index]
+            table['#DMRs_hypo_in_right'] = [dmrs['DMTree'].str.contains(('N'+i+',').replace('|',r'\|')).sum() for i in table.index]
         # print(table)
         
         def decodeSigCmp(x):
@@ -864,9 +864,9 @@ def gsea(args, finalCls, mout, unmout=None):
         uors = 'sup'
         for dmrs in dmrs_list:
             if dmrs is not None:
-                table = pd.DataFrame([dmrs['DMTree'].str.contains(('P'+i+',').replace('|','\|')).sum() for i in finalCls.columns[1:]], list(finalCls.columns[1:]))
+                table = pd.DataFrame([dmrs['DMTree'].str.contains(('P'+i+',').replace('|',r'\|')).sum() for i in finalCls.columns[1:]], list(finalCls.columns[1:]))
                 table.columns = ['#DMRs_hypo_in_left']
-                table['#DMRs_hypo_in_right'] = [dmrs['DMTree'].str.contains(('N'+i+',').replace('|','\|')).sum() for i in table.index]
+                table['#DMRs_hypo_in_right'] = [dmrs['DMTree'].str.contains(('N'+i+',').replace('|',r'\|')).sum() for i in table.index]
                 # print(table)
                 
                 table['left'] = [','.join(decodeSigCmpLR(i)['L']) for i in table.index]
@@ -877,7 +877,7 @@ def gsea(args, finalCls, mout, unmout=None):
                     j = 0
                     for i in table.index:
                         gene_sets = args.genesets
-                        gene_list = list(set(dmrs.loc[(dmrs['DMTree'].str.contains(('P'+i+',').replace('|','\|')))&(dmrs['meandiffabs']>args.minMethDiffHigh)]['SYMBOL'].dropna()))
+                        gene_list = list(set(dmrs.loc[(dmrs['DMTree'].str.contains(('P'+i+',').replace('|',r'\|')))&(dmrs['meandiffabs']>args.minMethDiffHigh)]['SYMBOL'].dropna()))
                         
                         try:
                             for gs in gene_sets.split(','):
@@ -907,7 +907,7 @@ def gsea(args, finalCls, mout, unmout=None):
                     j = 0
                     for i in table.index:
                         gene_sets = args.genesets
-                        gene_list = list(set(dmrs.loc[(dmrs['DMTree'].str.contains(('N'+i+',').replace('|','\|')))&(dmrs['meandiffabs']>args.minMethDiffHigh)]['SYMBOL'].dropna()))
+                        gene_list = list(set(dmrs.loc[(dmrs['DMTree'].str.contains(('N'+i+',').replace('|',r'\|')))&(dmrs['meandiffabs']>args.minMethDiffHigh)]['SYMBOL'].dropna()))
                         
                         try:
                             for gs in gene_sets.split(','):
