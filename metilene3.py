@@ -3,6 +3,7 @@ import os
 import sys
 import time
 import argparse
+import numpy as np
 import pandas as pd
 import warnings
 warnings.filterwarnings('ignore')
@@ -599,7 +600,7 @@ def plotClustermap(mout, cls, reportPath, sids, finalCls, cls_full):
         
     denovo_pn2 = mout[['mean','sig.comparison','sig.comparison.bin']]
     denovo_pn2['tmp'] = 0
-    c = 2**100
+    c = np.int64(2**63)
     def allrelated(x):
         if x.find('1') > -1:
             return [x,\
