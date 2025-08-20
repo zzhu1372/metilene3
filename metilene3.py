@@ -28,7 +28,7 @@ parser.add_argument('-M', "--maxdist", type=int, default=300, help='(optional) m
 parser.add_argument('-m', "--minCpGs", type=int, default=10, help='(optional) minimum CpGs',)
 parser.add_argument('-d', "--minMethDiff", type=float, default=0.1, help='(optional) minimum mean methylation difference',)
 parser.add_argument('-r', "--minDMR", type=int, default=5, help='(optional) minimum CpGs with minimum mean methylation difference in a segment',)
-parser.add_argument('-X', "--minNonNA", type=int, default=0, help='(optional) minimum samples with non-NA values',)
+parser.add_argument('-X', "--minNonNA", type=int, default=0, help='(optional) minimum samples with non-NA values in each group',)
 parser.add_argument('-v', "--valley", type=float, default=0.7, help='(optional) a cutoff for the difference between global and regional methylation differences',)
 parser.add_argument('-D', "--minMethDiffHigh", type=float, default=0.5, help='(optional) minimum mean methylation difference for DMTree and GSEA, similar to -d but a higher value will be recommanded to reduce the number of false positive DMRs',)
 parser.add_argument('-u', "--clusteringRatio", type=float, default=0.5, help='(optional) maximum ratio of CpGs with minimum difference in a cluster',)
