@@ -40,7 +40,7 @@ parser.add_argument('-plot', "--visualization", type=lambda x: (str(x).lower() =
 parser.add_argument('-anno', "--annotation", help='(optional) hg19 or hg38, use ChIPseeker to annotate the DMRs',)
 parser.add_argument('-refs', "--refSeq", help='(optional) reference genome, for sequence annotation',)
 parser.add_argument('-gsea', "--genesets", help='(optional) geneset gmt file for GSEA',)
-parser.add_argument('-wsup', "--withSupervised", type=lambda x: (str(x).lower() == 'true'), default=True)
+parser.add_argument('-wsup', "--withSupervised", help='(optional) run supervised mode on clusters after unsupervised mode', type=lambda x: (str(x).lower() == 'true'), default=True)
 parser.add_argument('--version', action='version', version=f'%(prog)s {VERSION}', help='Get the version of metilene3',)
 
 # hidden
