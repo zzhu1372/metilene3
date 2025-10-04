@@ -34,7 +34,7 @@
 #define MAXN 13
 #define MAXM 13
 
-char *version = "0.2-8";
+char *version = "3.0";
 unsigned char mute=0;
 pthread_mutex_t updatemtx;
 double get_ratio(double *a, int m, double *b, int n);
@@ -1844,7 +1844,7 @@ segmenterSTK(segment_t *seg, segment_t *globalbreaks, int *nglobal, double ***XS
         if(m-n+1 >= nfo->mincpgs){clustering(clusters, nclusters, nfo->groups, subgroupID, subgroupSize, seg, nfo, XS, ks, n, m);}
         a = n;
         b = m;
-        KS = ks;
+        memmove(KS, ks, sizeof(double)*4);;
       } else {
         a = -1; // zzhu$ a==-1 means there is no left region of max, continue to right segment.
       }
@@ -1895,7 +1895,7 @@ segmenterSTK(segment_t *seg, segment_t *globalbreaks, int *nglobal, double ***XS
         if(m-n+1 >= nfo->mincpgs){clustering(clusters, nclusters, nfo->groups, subgroupID, subgroupSize, seg, nfo, XS, ks, n, m);}
         a = n;
         b = m;
-        KS = ks;
+        memmove(KS, ks, sizeof(double)*4);;
       } else {
         a = -1; 
       }

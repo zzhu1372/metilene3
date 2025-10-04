@@ -4,7 +4,7 @@
 #include "basic-types.h"
 
 #ifndef ALLOCMEMORY
-	#include "memory.h"
+    #include "memory.h"
 #endif
 
 #define TAB '\t' /*0x09*/
@@ -17,32 +17,32 @@
 #define SQT '\''
 
 
-#define COPYSTR(M,D,S,L) 		D=ALLOCMEMORY(M,D,char,L+1); \
-								strncpy(D,S,L);\
-								D[L]='\0'
+#define COPYSTR(M,D,S,L)        do { D=ALLOCMEMORY(M,D,char,L+1); \
+                                strncpy(D,S,L);\
+                                D[L]='\0'; } while (0)
 
-#define INDENT(s,x,c) 			{int p; for(p=0;p<x;p++) fprintf(s,"%c",c);}
-#define ISWHITESPACE(C) 		(C == SP || C == TAB ||  C == LF \
-								|| C == VT || C == CR || C == FF ) 
-#define ISQUOTE(C) 				(C== DQT || C==SQT)
-#define SETSTR(X,I) 			(X)->strings[(I)].str
-#define SETSTRLEN(X,I)			(X)->strings[(I)].len
+#define INDENT(s,x,c)           do {int p; for(p=0;p<x;p++) fprintf(s,"%c",c);} while (0)
+#define ISWHITESPACE(C)         (C == SP || C == TAB ||  C == LF \
+                                || C == VT || C == CR || C == FF )
+#define ISQUOTE(C)                  (C== DQT || C==SQT)
+#define SETSTR(X,I)             (X)->strings[(I)].str
+#define SETSTRLEN(X,I)          (X)->strings[(I)].len
 
-#define APPENDCHAR(S, X, L, Y) 	(X)=ALLOCMEMORY(S, X, char, L+1);\
-										 X[L-1]=Y;\
-										 X[L]=0 
+#define APPENDCHAR(S, X, L, Y)  do { (X)=ALLOCMEMORY(S, X, char, L+1);\
+                                X[L-1]=Y;\
+                                X[L]=0; } while (0)
 
 typedef struct{
 
-	char* str;
-	Uint len;
+    char* str;
+    Uint len;
 
 } string_t;
 
 typedef struct{
 
-	string_t* strings;
-	Uint noofstrings;
+    string_t* strings;
+    Uint noofstrings;
 
 } stringset_t;
 
@@ -52,4 +52,3 @@ void destructStringset(void *, stringset_t *);
 char *my_strdup(const char *str);
 
 #endif
-

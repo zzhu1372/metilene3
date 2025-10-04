@@ -5,10 +5,10 @@
  *
  *	debug.h
  *  debug messages
- * 
+ *
  *  @author Steve Hoffmann, steve@bioinf.uni-leipzig.de
- *  @company Bioinformatics, University of Leipzig 
- *  @date 08/26/2007 07:17:44 PM CEST  
+ *  @company Bioinformatics, University of Leipzig
+ *  @date 08/26/2007 07:17:44 PM CEST
  *
  *  SVN
  *  Revision of last commit: $Rev: 19 $
@@ -33,8 +33,8 @@
 
 #define DBGL(L, X, ... ) debuglevel (__FILE__, __LINE__, L, X, __VA_ARGS__)
 #define DBG(X, ...) debugmsg(__FILE__, __LINE__, X, __VA_ARGS__)
-#define DBGEXIT(X, ...) { debugmsg (__FILE__, __LINE__, X, __VA_ARGS__); \
-                    exit(-1); }
+#define DBGEXIT(X, ...) do { debugmsg (__FILE__, __LINE__, X, __VA_ARGS__); \
+                    exit(-1); } while (0)
 
 
 /*deprecated*/
