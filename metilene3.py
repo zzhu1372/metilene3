@@ -42,6 +42,7 @@ parser.add_argument('-refs', "--refSeq", help='(optional) reference genome, for 
 parser.add_argument('-gsea', "--genesets", help='(optional) geneset gmt file for GSEA',)
 parser.add_argument('-wsup', "--withSupervised", help='(optional) run supervised mode on clusters after unsupervised mode', type=lambda x: (str(x).lower() == 'true'), default=True)
 parser.add_argument('--version', action='version', version=f'%(prog)s {VERSION}', help='Get the version of metilene3',)
+parser.add_argument('-test', "--test", help='(optional) run on the test dataset', type=lambda x: (str(x).lower() == 'true'), default=False)
 
 # hidden
 parser.add_argument('-sk', "--skipMetilene", type=lambda x: (str(x).lower() == 'true'), default=False, help=argparse.SUPPRESS)
@@ -1106,6 +1107,9 @@ def main():
     args = parser.parse_args()
     print(start_time,": Started.")
     # print(args)
+    if args.test:
+        args.input = os.path.realpath(__file__).replace('metilene3.py','demo_input.tsv')
+        args.minSumDMRs = 0
     msg = checkParams(args)
     if msg:
         print(msg)
