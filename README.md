@@ -7,13 +7,18 @@ Please see the [metilene<sup>3</sup>-doc](https://zzhu1372.github.io/metilene3-d
 ![alt text](https://zzhu1372.github.io/metilene3-doc/fig/framework.png "framework")
 
 ## Installation
-You can install metilene<sup>3</sup> on Linux, WSL and macOS from this GitHub repo:
+You can download and install metilene<sup>3</sup> on Linux, WSL and macOS from this GitHub repo:
 ```
 git clone https://github.com/zzhu1372/metilene3.git
 cd ./metilene3
 make
 ```
-To use metilene3, some software and packages are necessary (e.g., Python and pandas) - please check [here](https://zzhu1372.github.io/metilene3-doc/docs/guide/installation.html).
+Dependencies can be installed with conda:
+```
+conda create -n metilene3 -c bioconda -c conda-forge python==3.10.0 pandas scikit-learn seaborn biopython gseapy r-base bioconductor-ChIPseeker bioconductor-org.Hs.eg.db
+conda activate metilene3
+```
+Please check [here](https://zzhu1372.github.io/metilene3-doc/docs/guide/installation.html) for more details.
 
 ## Quick Start
 After installation, you can test metilene<sup>3</sup> with the included test dataset ``demo_input.tsv``:
