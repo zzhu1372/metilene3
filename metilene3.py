@@ -783,6 +783,7 @@ def DMRtable(args, finalCls, mout, unmout=None):
         else:
             table['Left_Child'] = [','.join(decodeSigCmpLR(i)['L']) for i in table.index]
             table['Right_Child'] = [','.join(decodeSigCmpLR(i)['R']) for i in table.index]
+            table['DMTree_ID'] = table.index
         
         table.index = range(len(table.index))#[decodeSigCmp(i) for i in table.index]
         tables.append(table)
