@@ -672,8 +672,8 @@ def plotClustermap(mout, cls, reportPath, sids, finalCls, cls_full):
     sns.scatterplot(x=X[0],y=X[1],c=X['grp'],ax=ax0,s=30)
     
     label_color_dict = clsCD.copy()
-    legend_handles = [Patch(color=color, label=label) for label, color in label_color_dict.items()]
-    ax0.legend(handles=legend_handles, ncol=1, )
+    legend_handles = [Patch(color=color, label=label) for label, color in dict(sorted(label_color_dict.items())).items()]
+    ax0.legend(handles=legend_handles, loc='center left', bbox_to_anchor=(1.25, 0.5), ncol=1+int(len(X['grp'].unique())/6))
 #    ax0.axis('off')
     plt.savefig(reportPath+'PCA.jpg', bbox_inches='tight')
     plt.savefig(reportPath+'PCA.pdf', bbox_inches='tight')
