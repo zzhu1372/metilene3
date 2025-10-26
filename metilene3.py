@@ -956,7 +956,7 @@ def report_unsup(args, start_time, end_time, unmout, finalCls, mout):
     with open(os.path.realpath(__file__).replace('metilene3.py','')+'template_unsup.html', 'r') as template_file:
         template_content = template_file.read()
 
-    final_html = template_content.replace('<h2>Metilene Report for XXX</h2>', '<h2>Metilene Report for '+args.input.split('/')[-1]+'</h2>')
+    final_html = template_content.replace('<h2>Metilene<sup>3</sup> Report for XXX</h2>', '<h2>Metilene<sup>3</sup> Report for '+args.input.split('/')[-1]+'</h2>')
     final_html = final_html.replace('<div>Version: XXX</div><br>', '<div>Version: '+str(VERSION)+'</div><br>')
     final_html = final_html.replace('<div>Command: XXX</div><br>', '<div>Command: '+''.join([i+' ' for i in sys.argv])+'</div><br>')
     final_html = final_html.replace('<div>Parameters: XXX</div><br>', '<div>Parameters: <br>'+str(args).split('Namespace')[-1][1:-1].split(', skipMetilene')[0]+'</div><br>')
@@ -992,7 +992,7 @@ def report_sup(args, start_time, end_time, mout):
     with open(os.path.realpath(__file__).replace('metilene3.py','')+'template_sup.html', 'r') as template_file:
         template_content = template_file.read()
 
-    final_html = template_content.replace('<h2>Metilene Report for XXX</h2>', '<h2>Metilene Report for '+args.input.split('/')[-1]+'</h2>')
+    final_html = template_content.replace('<h2>Metilene<sup>3</sup> Report for XXX</h2>', '<h2>Metilene<sup>3</sup> Report for '+args.input.split('/')[-1]+'</h2>')
     final_html = final_html.replace('<div>Version: XXX</div><br>', '<div>Version: '+str(VERSION)+'</div><br>')
     final_html = final_html.replace('<div>Command: XXX</div><br>', '<div>Command: '+''.join([i+' ' for i in sys.argv])+'</div><br>')
     final_html = final_html.replace('<div>Parameters: XXX</div><br>', '<div>Parameters: <br>'+str(args).split('Namespace')[-1][1:-1].split(', skipMetilene')[0]+'</div><br>')
@@ -1016,7 +1016,7 @@ def report_wosup(args, start_time, end_time, unmout, finalCls):
     with open(os.path.realpath(__file__).replace('metilene3.py','')+'template_wosup.html', 'r') as template_file:
         template_content = template_file.read()
 
-    final_html = template_content.replace('<h2>Metilene Report for XXX</h2>', '<h2>Metilene Report for '+args.input.split('/')[-1]+'</h2>')
+    final_html = template_content.replace('<h2>Metilene<sup>3</sup> Report for XXX</h2>', '<h2>Metilene<sup>3</sup> Report for '+args.input.split('/')[-1]+'</h2>')
     final_html = final_html.replace('<div>Version: XXX</div><br>', '<div>Version: '+str(VERSION)+'</div><br>')
     final_html = final_html.replace('<div>Command: XXX</div><br>', '<div>Command: '+''.join([i+' ' for i in sys.argv])+'</div><br>')
     final_html = final_html.replace('<div>Parameters: XXX</div><br>', '<div>Parameters: <br>'+str(args).split('Namespace')[-1][1:-1].split(', skipMetilene')[0]+'</div><br>')
@@ -1047,7 +1047,7 @@ def report_nocls(args, start_time, end_time, unmout):
     with open(os.path.realpath(__file__).replace('metilene3.py','')+'template_wosup.html', 'r') as template_file:
         template_content = template_file.read()
 
-    final_html = template_content.replace('<h2>Metilene Report for XXX</h2>', '<h2>Metilene Report for '+args.input.split('/')[-1]+'</h2>')
+    final_html = template_content.replace('<h2>Metilene<sup>3</sup> Report for XXX</h2>', '<h2>Metilene<sup>3</sup> Report for '+args.input.split('/')[-1]+'</h2>')
     final_html = final_html.replace('<div>Version: XXX</div><br>', '<div>Version: '+str(VERSION)+'</div><br>')
     final_html = final_html.replace('<div>Command: XXX</div><br>', '<div>Command: '+''.join([i+' ' for i in sys.argv])+'</div><br>')
     final_html = final_html.replace('<div>Parameters: XXX</div><br>', '<div>Parameters: <br>'+str(args).split('Namespace')[-1][1:-1].split(', skipMetilene')[0]+'</div><br>')
