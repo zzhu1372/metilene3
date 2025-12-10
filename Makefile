@@ -1,3 +1,5 @@
+  CXX=g++
+  CXXFLAGS= -Wall -O3 -g
   CC=gcc
   LD=${CC} 
   CFLAGS= -Wall -pedantic -std=c99 -O3 -D_GNU_SOURCE_ -g  -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64 -DDBGLEVEL=0 -DPROGNFO -I -Lsrc -DPCGRNG
@@ -18,12 +20,15 @@
 	src/mtc.o\
 	src/metseg.o
 
-all: metilene 
+all: metilene bedavg
 
 metilene: ${METSEGOBJ}
 	gcc $(CFLAGS) ${METSEGOBJ} -o metilene $(LDFLAGS)
 
+bedavg: src/bedavg.cpp
+	$(CXX) $(CXXFLAGS) src/bedavg.cpp -o bedavg
+
 clean:
-	rm -rf src/*.o metilene
+	rm -rf src/*.o metilene bedavg
 
 .PHONY: all clean

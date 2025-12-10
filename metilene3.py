@@ -28,6 +28,7 @@ parser.add_argument('-M', "--maxdist", type=int, default=300, help='(optional) m
 parser.add_argument('-m', "--minCpGs", type=int, default=10, help='(optional) minimum CpGs',)
 parser.add_argument('-d', "--minMethDiff", type=float, default=0.1, help='(optional) minimum mean methylation difference',)
 parser.add_argument('-r', "--minDMR", type=int, default=5, help='(optional) minimum CpGs with minimum mean methylation difference in a segment',)
+parser.add_argument('-k', "--anova", type=float, default=0.01, help='(optional) maximum Kruskal-Wallis-Test p-value',)
 parser.add_argument('-X', "--minNonNA", type=int, default=1, help='(optional) minimum samples with non-NA values in each group',)
 parser.add_argument('-v', "--valley", type=float, default=0.7, help='(optional) a cutoff for the difference between global and regional methylation differences',)
 parser.add_argument('-D', "--minMethDiffHigh", type=float, default=0.5, help='(optional) minimum mean methylation difference for DMTree and GSEA, similar to -d but a higher value will be recommanded to reduce the number of false positive DMRs',)
@@ -221,7 +222,7 @@ def processOutput(args, ifsup, anno='F'):
         moutPath = args.output + '/DMRs.tsv'
     mout = pd.read_table(moutPath)
     
-    mout = mout.loc[mout['sig.comparison']!='TBC']
+    mout = mout.loc[mout['sig.comparison']!='TBC'].sort_values(['chr','start','stop'])
     # if args.skipMetilene:
     #     return mout
     if mout.shape[0]<1:
@@ -296,6 +297,11 @@ def processOutput(args, ifsup, anno='F'):
         mout['Int-groups'] = mout['sig.comparison'].apply(sigcom2inter).apply(lambda x:','.join(sorted([rename_cls[i] for i in x])))\
                                                                                                                             .apply(lambda x:x if x!='' else '-')
         mout['Hyper-groups'] = mout['sig.comparison'].apply(sigcom2hyper).apply(lambda x:','.join(sorted([rename_cls[i] for i in x])))
+        if args.groupinfo:
+            mout = addANOVA(mout, args.input, args.groupinfo, args.output+'/DMR-met.tsv', args.threads)
+        else:
+            mout = addANOVA(mout, args.input, args.output+'/clusters.tsv', args.output+'/DMR-met.tsv', args.threads)
+        mout = mout.loc[mout['anova']<args.anova]
 
     # print('# of processed DMRs:',mout.shape[0])
     if anno == 'T' and args.annotation:
@@ -309,6 +315,35 @@ def processOutput(args, ifsup, anno='F'):
     return mout
 
 
+def addANOVA(dmrs, met, grp, dmrmet, nthreads, pandarallel=False):
+    dmrs['dmrid'] = dmrs['chr'].astype(str)+'-'+dmrs['start'].astype(str)+'-'+dmrs['stop'].astype(str)
+
+    dmrs[['chr','start','stop']].to_csv(dmrmet+'.bed', sep='\t', header=False, index=False)
+    os.system(os.path.realpath(__file__).replace('metilene3.py','bedavg')+' '+met+' '+dmrmet+'.bed  '+dmrmet+' '+str(nthreads))
+    
+    from scipy.stats import kruskal
+    dmrmet = pd.read_table(dmrmet, index_col=0)
+    grp = pd.read_table(grp, index_col=None).sort_values(['Group','ID'])
+    grp.index = range(len(grp.index))
+    grprange = []
+    begin = 0
+    for i in grp['Group'].unique():
+        grprange.append([begin, grp[grp['Group']==i].index[-1]+1])
+        begin = grp[grp['Group']==i].index[-1]+1
+
+    dmrmet = dmrmet[grp['ID']]
+    def grpseg(x,y):
+        return [x[i[0]:i[1]] for i in y]
+    if pandarallel:
+        from pandarallel import pandarallel
+        pandarallel.initialize(progress_bar=True, nb_workers=10)
+        pval = dmrmet.parallel_apply(lambda x:kruskal(*grpseg(x,grprange))[1], axis=1).T
+    else:
+        pval = dmrmet.apply(lambda x:kruskal(*grpseg(x,grprange))[1], axis=1).T
+
+    dmrs['anova'] = dmrs['dmrid'].map(pval)
+    return dmrs.drop(columns=['dmrid'])
+    
 def addDMTree2DMR(args, ifsup, cls, finalCls):
     if ifsup=='unsup':
         moutPath = args.output + '/DMRs-unsupervised.tsv'
