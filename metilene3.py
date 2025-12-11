@@ -337,9 +337,9 @@ def addANOVA(dmrs, met, grp, dmrmet, nthreads, pandarallel=False):
     if pandarallel:
         from pandarallel import pandarallel
         pandarallel.initialize(progress_bar=True, nb_workers=10)
-        pval = dmrmet.parallel_apply(lambda x:kruskal(*grpseg(x,grprange))[1], axis=1).T
+        pval = dmrmet.parallel_apply(lambda x:kruskal(*grpseg(x,grprange),nan_policy='omit')[1], axis=1).T
     else:
-        pval = dmrmet.apply(lambda x:kruskal(*grpseg(x,grprange))[1], axis=1).T
+        pval = dmrmet.apply(lambda x:kruskal(*grpseg(x,grprange),nan_policy='omit')[1], axis=1).T
 
     dmrs['anova'] = dmrs['dmrid'].map(pval)
     return dmrs.drop(columns=['dmrid'])
