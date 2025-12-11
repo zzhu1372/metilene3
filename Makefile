@@ -18,7 +18,7 @@
 	src/mtc.o\
 	src/metseg.o
 
-all: metilene 
+all: metilene bedavg
 
 metilene: ${METSEGOBJ}
 	gcc $(CFLAGS) ${METSEGOBJ} -o metilene $(LDFLAGS)

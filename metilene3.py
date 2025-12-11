@@ -319,7 +319,7 @@ def addANOVA(dmrs, met, grp, dmrmet, nthreads, pandarallel=False):
     dmrs['dmrid'] = dmrs['chr'].astype(str)+'-'+dmrs['start'].astype(str)+'-'+dmrs['stop'].astype(str)
 
     dmrs[['chr','start','stop']].to_csv(dmrmet+'.bed', sep='\t', header=False, index=False)
-    os.system(os.path.realpath(__file__).replace('metilene3.py','bedavg')+' '+met+' '+dmrmet+'.bed  '+dmrmet+' '+str(nthreads))
+    os.system(os.path.realpath(__file__).replace('metilene3.py','bedavg')+' '+met+' '+dmrmet+'.bed  '+dmrmet)
     
     from scipy.stats import kruskal
     dmrmet = pd.read_table(dmrmet, index_col=0)
