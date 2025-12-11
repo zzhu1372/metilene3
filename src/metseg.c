@@ -2960,9 +2960,9 @@ int main(int argc, char** argv) {
 // Options  
   manopt_initoptionset(&optset, argv[0], NULL, 
       "metilene - a tool for fast and sensitive detection of differential DNA methylation\n\nDataInputFile\t\tneeds to be SORTED for chromosomes and genomic positions",
-      "Implemented by Frank Juehling and Steve Hoffmann\n  2015-2016 Bioinformatik Leipzig\n",
+      "Implemented by Frank Juehling and Steve Hoffmann, and updated by Zhihan Zhu\n  2015-2025 Bioinformatik Leipzig\n",
       version,
-      "Please report bugs to [frank,steve]@bioinf.uni-leipzig.de");
+      "Please report bugs to [frank,steve]@bioinf.uni-leipzig.de or zzhu@molgen.mpg.de");
 
   manopt(&optset, REQUINTOPT, 0, 'M', "maxdist", 
       "maximum distance", "<n>", NULL, &nfo.maxdist);
