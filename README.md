@@ -15,7 +15,7 @@ make
 ```
 Dependencies can be installed with conda:
 ```
-conda create -n metilene3 -c bioconda -c conda-forge python==3.10.0 pandas scikit-learn seaborn biopython gseapy r-base bioconductor-ChIPseeker bioconductor-org.Hs.eg.db bioconductor-txdb.hsapiens.ucsc.hg19.knowngene bioconductor-txdb.hsapiens.ucsc.hg38.knowngene
+conda create -y -n metilene3 -c bioconda -c conda-forge python==3.10.0 pandas pandarallel scikit-learn seaborn biopython gseapy r-base bioconductor-ChIPseeker bioconductor-org.Hs.eg.db bioconductor-txdb.hsapiens.ucsc.hg19.knowngene bioconductor-txdb.hsapiens.ucsc.hg38.knowngene
 conda activate metilene3
 ```
 Please check [here](https://zzhu1372.github.io/metilene3-doc/docs/guide/installation.html) for more details.

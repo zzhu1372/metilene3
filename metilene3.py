@@ -42,6 +42,7 @@ parser.add_argument('-anno', "--annotation", help='(optional) hg19 or hg38, use 
 parser.add_argument('-refs', "--refSeq", help='(optional) reference genome, for sequence annotation',)
 parser.add_argument('-gsea', "--genesets", help='(optional) geneset gmt file for GSEA',)
 parser.add_argument('-wsup', "--withSupervised", help='(optional) run supervised mode on clusters after unsupervised mode', type=lambda x: (str(x).lower() == 'true'), default=True)
+parser.add_argument('-pdrl', "--pandarallel", help='(optional) run Kruskal-Wallis-Test with pandarallel', type=lambda x: (str(x).lower() == 'true'), default=False)
 parser.add_argument('--version', action='version', version=f'%(prog)s {VERSION}', help='Get the version of metilene3',)
 parser.add_argument('-test', "--test", help='(optional) run on the test dataset', type=lambda x: (str(x).lower() == 'true'), default=False)
 
@@ -298,10 +299,10 @@ def processOutput(args, ifsup, anno='F'):
                                                                                                                             .apply(lambda x:x if x!='' else '-')
         mout['Hyper-groups'] = mout['sig.comparison'].apply(sigcom2hyper).apply(lambda x:','.join(sorted([rename_cls[i] for i in x])))
         if args.groupinfo:
-            mout = addANOVA(mout, args.input, args.groupinfo, args.output+'/DMR-met.tsv', args.threads)
+            mout = addANOVA(mout, args.input, args.groupinfo, args.output+'/DMR-met.tsv', args.threads, args.pandarallel)
         else:
-            mout = addANOVA(mout, args.input, args.output+'/clusters.tsv', args.output+'/DMR-met.tsv', args.threads)
-        mout = mout.loc[mout['anova']<args.anova]
+            mout = addANOVA(mout, args.input, args.output+'/clusters.tsv', args.output+'/DMR-met.tsv', args.threads, args.pandarallel)
+        mout = mout.loc[mout['p-kwt']<args.anova]
 
     # print('# of processed DMRs:',mout.shape[0])
     if anno == 'T' and args.annotation:
@@ -310,12 +311,19 @@ def processOutput(args, ifsup, anno='F'):
     if anno == 'T' and args.refSeq:
         mout = addSeq(mout, args.refSeq)
 
+    mout = mout.rename(columns={'p':'p-ks','mwu':'p-mwu','q':'q-ks'})
+    
+    colsorder = mout.columns
+    priorcols = ['chr', 'start', 'stop', 'meandiffabs', 'p-kwt', ]
+    lastcols = ['meandiff', 'p-ks', 'q-ks', 'p-mwu']
+    mout = mout[priorcols + list(colsorder[~colsorder.isin(priorcols+lastcols)]) + lastcols]
+    
     mout.to_csv(moutPath, index=False, sep='\t')
                     
     return mout
 
 
-def addANOVA(dmrs, met, grp, dmrmet, nthreads, pandarallel=False):
+def addANOVA(dmrs, met, grp, dmrmet, nthreads, pandarallel):
     dmrs['dmrid'] = dmrs['chr'].astype(str)+'-'+dmrs['start'].astype(str)+'-'+dmrs['stop'].astype(str)
 
     dmrs[['chr','start','stop']].to_csv(dmrmet+'.bed', sep='\t', header=False, index=False)
@@ -336,12 +344,12 @@ def addANOVA(dmrs, met, grp, dmrmet, nthreads, pandarallel=False):
         return [x[i[0]:i[1]] for i in y]
     if pandarallel:
         from pandarallel import pandarallel
-        pandarallel.initialize(progress_bar=True, nb_workers=10)
+        pandarallel.initialize(progress_bar=True, nb_workers=nthreads)
         pval = dmrmet.parallel_apply(lambda x:kruskal(*grpseg(x,grprange),nan_policy='omit')[1], axis=1).T
     else:
         pval = dmrmet.apply(lambda x:kruskal(*grpseg(x,grprange),nan_policy='omit')[1], axis=1).T
 
-    dmrs['anova'] = dmrs['dmrid'].map(pval)
+    dmrs['p-kwt'] = dmrs['dmrid'].map(pval)
     return dmrs.drop(columns=['dmrid'])
     
 def addDMTree2DMR(args, ifsup, cls, finalCls):
