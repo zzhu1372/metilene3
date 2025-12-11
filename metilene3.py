@@ -314,7 +314,10 @@ def processOutput(args, ifsup, anno='F'):
     mout = mout.rename(columns={'p':'p-ks','mwu':'p-mwu','q':'q-ks'})
     
     colsorder = mout.columns
-    priorcols = ['chr', 'start', 'stop', 'meandiffabs', 'p-kwt', ]
+    if ifsup=='unsup':
+        priorcols = ['chr', 'start', 'stop', 'meandiffabs', ]
+    else:
+        priorcols = ['chr', 'start', 'stop', 'meandiffabs', 'p-kwt', ]
     lastcols = ['meandiff', 'p-ks', 'q-ks', 'p-mwu']
     mout = mout[priorcols + list(colsorder[~colsorder.isin(priorcols+lastcols)]) + lastcols]
     
