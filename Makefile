@@ -24,7 +24,7 @@ metilene: ${METSEGOBJ}
 	gcc $(CFLAGS) ${METSEGOBJ} -o metilene $(LDFLAGS)
 
 bedavg: src/bedavg.c
-	gcc $(CFLAGS) ${METSEGOBJ} -o bedavg $(LDFLAGS)
+	gcc $(CFLAGS) src/bedavg.c -o bedavg $(LDFLAGS)
 
 clean:
 	rm -rf src/*.o metilene
