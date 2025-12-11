@@ -23,6 +23,9 @@ all: metilene bedavg
 metilene: ${METSEGOBJ}
 	gcc $(CFLAGS) ${METSEGOBJ} -o metilene $(LDFLAGS)
 
+bedavg: src/bedavg.cpp
+	$(CXX) $(CXXFLAGS) src/bedavg.cpp -o bedavg
+
 clean:
 	rm -rf src/*.o metilene
 
