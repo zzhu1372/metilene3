@@ -299,10 +299,10 @@ def processOutput(args, ifsup, anno='F'):
                                                                                                                             .apply(lambda x:x if x!='' else '-')
         mout['Hyper-groups'] = mout['sig.comparison'].apply(sigcom2hyper).apply(lambda x:','.join(sorted([rename_cls[i] for i in x])))
         if args.groupinfo:
-            mout = addANOVA(mout, args.input, args.groupinfo, args.output+'/DMR-met.tsv', args.threads, args.pandarallel)
+            mout = addANOVA(mout, args.input, args.groupinfo, args.output+'/DMR-met.tsv', args.anova, args.threads, args.pandarallel)
         else:
-            mout = addANOVA(mout, args.input, args.output+'/clusters.tsv', args.output+'/DMR-met.tsv', args.threads, args.pandarallel)
-        mout = mout.loc[mout['p-kwt']<args.anova]
+            mout = addANOVA(mout, args.input, args.output+'/clusters.tsv', args.output+'/DMR-met.tsv', args.anova, args.threads, args.pandarallel)
+        # mout = mout.loc[mout['p-kwt']<args.anova]
 
     # print('# of processed DMRs:',mout.shape[0])
     if anno == 'T' and args.annotation:
@@ -326,14 +326,14 @@ def processOutput(args, ifsup, anno='F'):
     return mout
 
 
-def addANOVA(dmrs, met, grp, dmrmet, nthreads, pandarallel):
+def addANOVA(dmrs, met, grp, dmrmet_path, anova, nthreads, pandarallel):
     dmrs['dmrid'] = dmrs['chr'].astype(str)+'-'+dmrs['start'].astype(str)+'-'+dmrs['stop'].astype(str)
 
-    dmrs[['chr','start','stop']].to_csv(dmrmet+'.bed', sep='\t', header=False, index=False)
-    os.system(os.path.realpath(__file__).replace('metilene3.py','bedavg')+' '+met+' '+dmrmet+'.bed  '+dmrmet)
+    dmrs[['chr','start','stop']].to_csv(dmrmet_path+'.bed', sep='\t', header=False, index=False)
+    os.system(os.path.realpath(__file__).replace('metilene3.py','bedavg')+' '+met+' '+dmrmet_path+'.bed  '+dmrmet_path)
     
     from scipy.stats import kruskal
-    dmrmet = pd.read_table(dmrmet, index_col=0)
+    dmrmet = pd.read_table(dmrmet_path, index_col=0)
     grp = pd.read_table(grp, index_col=None).sort_values(['Group','ID'])
     grp.index = range(len(grp.index))
     grprange = []
@@ -353,6 +353,9 @@ def addANOVA(dmrs, met, grp, dmrmet, nthreads, pandarallel):
         pval = dmrmet.apply(lambda x:kruskal(*grpseg(x,grprange),nan_policy='omit')[1], axis=1).T
 
     dmrs['p-kwt'] = dmrs['dmrid'].map(pval)
+    dmrs = dmrs.loc[dmrs['p-kwt']<anova]
+    dmrmet = dmrmet.loc[dmrs['dmrid']]
+    dmrmet.to_csv(dmrmet_path, sep='\t')
     return dmrs.drop(columns=['dmrid'])
     
 def addDMTree2DMR(args, ifsup, cls, finalCls):
