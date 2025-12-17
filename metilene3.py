@@ -45,6 +45,7 @@ parser.add_argument('-wsup', "--withSupervised", help='(optional) run supervised
 parser.add_argument('-pdrl', "--pandarallel", help='(optional) run Kruskal-Wallis-Test with pandarallel', type=lambda x: (str(x).lower() == 'true'), default=False)
 parser.add_argument('--version', action='version', version=f'%(prog)s {VERSION}', help='Get the version of metilene3',)
 parser.add_argument('-test', "--test", help='(optional) run on the test dataset', type=lambda x: (str(x).lower() == 'true'), default=False)
+parser.add_argument('-udmr', "--unsupervisedDMRs", help='(optional) the metilene3 unsupervised DMRs',)
 
 # hidden
 parser.add_argument('-sk', "--skipMetilene", type=lambda x: (str(x).lower() == 'true'), default=False, help=argparse.SUPPRESS)
@@ -363,7 +364,10 @@ def addDMTree2DMR(args, ifsup, cls, finalCls):
         moutPath = args.output + '/DMRs-unsupervised.tsv'
     else:
         moutPath = args.output + '/DMRs.tsv'
-    mout = pd.read_table(moutPath)
+    if args.unsupervisedDMRs:
+        mout = pd.read_table(args.unsupervisedDMRs)
+    else:
+        mout = pd.read_table(moutPath)
     
     def rev123(x):
         return x.replace('3','x').replace('1','3').replace('x','1')
@@ -1189,8 +1193,11 @@ def main():
         print(time.ctime(),": Running unsupervised mode...")
         headerfile = args.output+'/'+args.input.split('/')[-1]+'.unsup.header'
         preprocess(args, headerfile, 'unsup')
-        runMetilene(args, headerfile, 'unsup')
-        unmout = processOutput(args, 'unsup', anno='T')
+        if args.unsupervisedDMRs:
+            unmout = pd.read_table(args.unsupervisedDMRs)
+        else:
+            runMetilene(args, headerfile, 'unsup')
+            unmout = processOutput(args, 'unsup', anno='T')
         if unmout is None:
             end_time = time.ctime()
             print(end_time,": Finished.")
