@@ -58,32 +58,26 @@ class CommentedDataFrame(pd.DataFrame):
 
     def __init__(self, *args, comments=None, **kwargs):
         super().__init__(*args, **kwargs)
-        self.comments = comments or []
+        self.comments = comments
 
     @property
     def _constructor(self):
         return CommentedDataFrame
 
-    def to_tsv(self, path, comment_char="#", **kwargs):
+    def to_tsv(self, path, **kwargs):
         with open(path, "w") as f:
-            for c in self.comments:
-                if not c.startswith(comment_char):
-                    c = comment_char + c
-                f.write(c + "\n")
+            if self.comments:
+                f.write(self.comments + "\n")
         self.to_csv(path, mode='a', **kwargs)
 
 def commented_read_table(path, **kwargs):
-    comments = []
-    data_lines = []
-
+    comments = None
     with open(path, "r") as f:
         for line in f:
             if line.startswith('#'):
-                comments.append(line.rstrip("\n"))
-            else:
-                data_lines.append(line)
-    df = CommentedDataFrame(pd.read_table(path, comment='#', **kwargs))
-    df.comments = comments
+                comments = line.rstrip("\n")
+                break
+    df = CommentedDataFrame(pd.read_table(path, skiprows=1, **kwargs), comments = comments)
     return df
 
 
@@ -218,7 +212,7 @@ def chipseeker(mout, moutPath, anno):
     "peakAnno <- annotatePeak(peakfile, tssRegion=c(-3000, 1000), TxDb=txdb, annoDb=\'org.Hs.eg.db\');"+\
     "write.csv(as.GRanges(peakAnno), \'"+moutPath+".bed.csv\')"
     
-    mout.sort_values(['chr','start','stop',])[['chr','start','stop']].to_csv(\
+    mout.sort_values(['chr','start','stop',])[['chr','start','stop']].to_tsv(\
     moutPath+".bed",sep='\t',index=False,header=None)
     
     os.system('Rscript -e \"'+cmd+'\"')
@@ -355,7 +349,7 @@ def processOutput(args, ifsup, anno='F'):
     lastcols = ['meandiff', 'p-ks', 'q-ks', 'p-mwu']
     mout = mout[priorcols + list(colsorder[~colsorder.isin(priorcols+lastcols)]) + lastcols]
     
-    mout.to_csv(moutPath, index=False, sep='\t')
+    mout.to_tsv(moutPath, index=False, sep='\t')
                     
     return mout
 
@@ -480,7 +474,7 @@ def addDMTree2DMR(args, ifsup, cls, finalCls):
             mout['DMTree'] += mout['sig.comparison'].apply(lambda x:findDMTreeIDsup(cls_id[i],x,cls_id[i]+',','P'))
             mout['DMTree'] += mout['sig.comparison'].apply(lambda x:findDMTreeIDsup(rev123(cls_id[i]),x,cls_id[i]+',','N'))
 
-    mout[mout.columns[~mout.columns.str.contains('sig.comparison.bin')]].to_csv(moutPath, index=False, sep='\t')
+    mout[mout.columns[~mout.columns.str.contains('sig.comparison.bin')]].to_tsv(moutPath, index=False, sep='\t')
     return mout
 
 
