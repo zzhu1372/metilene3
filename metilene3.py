@@ -53,6 +53,39 @@ parser.add_argument('-kt', "--keeptmp", type=lambda x: (str(x).lower() == 'true'
 parser.add_argument('-n0', "--minN0", type=int, default=2, help=argparse.SUPPRESS)
 
 
+class CommentedDataFrame(pd.DataFrame):
+    _metadata = ["comments"]
+
+    def __init__(self, *args, comments=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.comments = comments or []
+
+    @property
+    def _constructor(self):
+        return CommentedDataFrame
+
+    def to_tsv(self, path, comment_char="#", **kwargs):
+        with open(path, "w") as f:
+            for c in self.comments:
+                if not c.startswith(comment_char):
+                    c = comment_char + c
+                f.write(c + "\n")
+        self.to_csv(path, mode='a', **kwargs)
+
+def commented_read_table(path, **kwargs):
+    comments = []
+    data_lines = []
+
+    with open(path, "r") as f:
+        for line in f:
+            if line.startswith('#'):
+                comments.append(line.rstrip("\n"))
+            else:
+                data_lines.append(line)
+    df = CommentedDataFrame(pd.read_table(path, **kwargs))
+    df.comments = comments
+    return df
+
 
 ###################################################################################################
 # Install
@@ -222,7 +255,7 @@ def processOutput(args, ifsup, anno='F'):
         moutPath = args.output + '/DMRs-unsupervised.tsv'
     else:
         moutPath = args.output + '/DMRs.tsv'
-    mout = pd.read_table(moutPath)
+    mout = commented_read_table(moutPath)
     
     mout = mout.loc[mout['sig.comparison']!='TBC'].sort_values(['chr','start','stop'])
     # if args.skipMetilene:
@@ -365,9 +398,9 @@ def addDMTree2DMR(args, ifsup, cls, finalCls):
     else:
         moutPath = args.output + '/DMRs.tsv'
     if args.unsupervisedDMRs:
-        mout = pd.read_table(args.unsupervisedDMRs)
+        mout = commented_read_table(args.unsupervisedDMRs)
     else:
-        mout = pd.read_table(moutPath)
+        mout = commented_read_table(moutPath)
     
     def rev123(x):
         return x.replace('3','x').replace('1','3').replace('x','1')
@@ -1194,7 +1227,7 @@ def main():
         headerfile = args.output+'/'+args.input.split('/')[-1]+'.unsup.header'
         preprocess(args, headerfile, 'unsup')
         if args.unsupervisedDMRs:
-            unmout = pd.read_table(args.unsupervisedDMRs)
+            unmout = commented_read_table(args.unsupervisedDMRs)
         else:
             runMetilene(args, headerfile, 'unsup')
             unmout = processOutput(args, 'unsup', anno='T')

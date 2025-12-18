@@ -3855,7 +3855,7 @@ int main(int argc, char** argv) {
     multiple_testing_correction(nfo.outputList, nfo.mode, nfo.mtc);
     // if(nfo.outputList->i>=2){fprintf(stderr,"start92:%d\n",nfo.outputList->segment_out[2].start);}
     if(verbose){fprintf(stderr, "Multiple testing correction done.\n");}
-    fprintf(stderr, "Number of non-NA CpGs: %d\n", numnonnan);
+    fprintf(stdout, "#non-NA CpGs:%d\n", numnonnan);
     // fprintf(stdout, "chr\tstart\tstop\tq\tmeandiff\tlength\tmwu\tp\t%s\tsig.comparison\n",subgroupNames);
     fprintf(stdout, "chr\tstart\tstop\tq\tmeandiff\tlength\tmwu\tp\tmean\tsig.comparison\n",subgroupNames);
     for(int i=0;i<nfo.outputList->i;i++){
