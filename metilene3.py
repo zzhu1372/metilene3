@@ -82,7 +82,7 @@ def commented_read_table(path, **kwargs):
                 comments.append(line.rstrip("\n"))
             else:
                 data_lines.append(line)
-    df = CommentedDataFrame(pd.read_table(path, **kwargs))
+    df = CommentedDataFrame(pd.read_table(path, comment='#', **kwargs))
     df.comments = comments
     return df
 
