@@ -394,17 +394,17 @@ def addANOVA(dmrs, met, grp, dmrmet_path, anova, nthreads, pandarallel):
     return dmrs.drop(columns=['dmrid'])
     
 def addDMTree2DMR(args, ifsup, cls, finalCls):
-    
-    if args.unsupervisedDMRs:
-        moutPath = args.output + '/DMRs-unsupervised.tsv'
-        mout = commented_read_table(args.unsupervisedDMRs)
-    else:
-        if ifsup=='unsup':
+
+    if ifsup=='unsup':
+        if args.unsupervisedDMRs:
+            moutPath = args.output + '/DMRs-unsupervised.tsv'
+            mout = commented_read_table(args.unsupervisedDMRs)
+        else:
             moutPath = args.output + '/DMRs-unsupervised.tsv'
             mout = commented_read_table(moutPath)
-        else:
-            moutPath = args.output + '/DMRs.tsv'
-            mout = commented_read_table(moutPath)
+    else:
+        moutPath = args.output + '/DMRs.tsv'
+        mout = commented_read_table(moutPath)
     
     def rev123(x):
         return x.replace('3','x').replace('1','3').replace('x','1')
@@ -1282,6 +1282,7 @@ def main():
         mout = addDMTree2DMR(args, 'sup', cls, finalCls)
 
         end_time = time.ctime()
+        print(mout.shape,unmout.shape)
         report_unsup(args, start_time, end_time, unmout, finalCls.drop(columns=cls[0]), mout)
         print(end_time,": Finished.")
 
