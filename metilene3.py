@@ -56,29 +56,34 @@ parser.add_argument('-n0', "--minN0", type=int, default=2, help=argparse.SUPPRES
 class CommentedDataFrame(pd.DataFrame):
     _metadata = ["comments"]
 
-    def __init__(self, *args, comments=None, **kwargs):
+    def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.comments = comments
+        self.comments = []
 
     @property
     def _constructor(self):
         return CommentedDataFrame
 
-    def to_tsv(self, path, **kwargs):
+    def to_tsv(self, path, comment_char="#", **kwargs):
         with open(path, "w") as f:
-            if self.comments:
-                f.write(self.comments + "\n")
+            f.write('')
+            for c in self.comments:
+                f.write(c + "\n")
         self.to_csv(path, mode='a', **kwargs)
 
-def commented_read_table(path, **kwargs):
-    comments = None
+def commented_read_table(path, skipcomments=False, **kwargs):
+    comments = []
     with open(path, "r") as f:
         for line in f:
             if line.startswith('#'):
-                comments = line.rstrip("\n")
+                comments.append(line.rstrip("\n"))
+            else:
                 break
-    df = CommentedDataFrame(pd.read_table(path, skiprows=1, **kwargs), comments = comments)
+    df = CommentedDataFrame(pd.read_table(path, skiprows=len(comments), **kwargs))
+    if not skipcomments:
+        df.comments = comments
     return df
+
 
 
 ###################################################################################################
@@ -211,9 +216,9 @@ def chipseeker(mout, moutPath, anno):
     "txdb<-"+anno+";"+\
     "peakAnno <- annotatePeak(peakfile, tssRegion=c(-3000, 1000), TxDb=txdb, annoDb=\'org.Hs.eg.db\');"+\
     "write.csv(as.GRanges(peakAnno), \'"+moutPath+".bed.csv\')"
-    
-    mout.sort_values(['chr','start','stop',])[['chr','start','stop']].to_tsv(\
-    moutPath+".bed",sep='\t',index=False,header=None)
+
+    mout.sort_values(['chr','start','stop',])[['chr','start','stop']].to_csv(\
+    moutPath+".bed",sep='\t',index=False,header=False)
     
     os.system('Rscript -e \"'+cmd+'\"')
     
@@ -247,9 +252,10 @@ def addSeq(mout, refSeq):
 def processOutput(args, ifsup, anno='F'):
     if ifsup=='unsup':
         moutPath = args.output + '/DMRs-unsupervised.tsv'
+        mout = commented_read_table(moutPath)
     else:
         moutPath = args.output + '/DMRs.tsv'
-    mout = commented_read_table(moutPath)
+        mout = commented_read_table(moutPath, skipcomments=True)
     
     mout = mout.loc[mout['sig.comparison']!='TBC'].sort_values(['chr','start','stop'])
     # if args.skipMetilene:
@@ -359,6 +365,7 @@ def addANOVA(dmrs, met, grp, dmrmet_path, anova, nthreads, pandarallel):
 
     dmrs[['chr','start','stop']].to_csv(dmrmet_path+'.bed', sep='\t', header=False, index=False)
     os.system(os.path.realpath(__file__).replace('metilene3.py','bedavg')+' '+met+' '+dmrmet_path+'.bed  '+dmrmet_path)
+    os.remove(dmrmet_path+".bed")
     
     from scipy.stats import kruskal
     dmrmet = pd.read_table(dmrmet_path, index_col=0)
@@ -387,14 +394,17 @@ def addANOVA(dmrs, met, grp, dmrmet_path, anova, nthreads, pandarallel):
     return dmrs.drop(columns=['dmrid'])
     
 def addDMTree2DMR(args, ifsup, cls, finalCls):
-    if ifsup=='unsup':
-        moutPath = args.output + '/DMRs-unsupervised.tsv'
-    else:
-        moutPath = args.output + '/DMRs.tsv'
+    
     if args.unsupervisedDMRs:
+        moutPath = args.output + '/DMRs-unsupervised.tsv'
         mout = commented_read_table(args.unsupervisedDMRs)
     else:
-        mout = commented_read_table(moutPath)
+        if ifsup=='unsup':
+            moutPath = args.output + '/DMRs-unsupervised.tsv'
+            mout = commented_read_table(moutPath)
+        else:
+            moutPath = args.output + '/DMRs.tsv'
+            mout = commented_read_table(moutPath)
     
     def rev123(x):
         return x.replace('3','x').replace('1','3').replace('x','1')
@@ -475,6 +485,7 @@ def addDMTree2DMR(args, ifsup, cls, finalCls):
             mout['DMTree'] += mout['sig.comparison'].apply(lambda x:findDMTreeIDsup(rev123(cls_id[i]),x,cls_id[i]+',','N'))
 
     mout[mout.columns[~mout.columns.str.contains('sig.comparison.bin')]].to_tsv(moutPath, index=False, sep='\t')
+    
     return mout
 
 
