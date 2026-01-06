@@ -34,17 +34,18 @@ parser.add_argument('-v', "--valley", type=float, default=0.7, help='(optional) 
 parser.add_argument('-D', "--minMethDiffHigh", type=float, default=0.5, help='(optional) minimum mean methylation difference for DMTree and GSEA, similar to -d but a higher value will be recommanded to reduce the number of false positive DMRs',)
 parser.add_argument('-u', "--clusteringRatio", type=float, default=0.5, help='(optional) maximum ratio of CpGs with minimum difference in a cluster',)
 # DMTree
-parser.add_argument('-n', "--minNSamples", type=int, default=3, help='(optional) minimum samples in a cluster',)
+parser.add_argument('-n', "--minNSamples", type=int, default=6, help='(optional) minimum samples in a cluster',)
 parser.add_argument('-w', "--minSumDMRs", type=int, default=100, help='(optional) minimum sum of DMR weights to split samples',)
 # optional
-parser.add_argument('-plot', "--visualization", type=lambda x: (str(x).lower() == 'true'), default=False, help='(optional) plot PCA and heatmap based on DMR methylation',)
+parser.add_argument('-auto', "--automatic", type=lambda x: (str(x).lower() == 'true'), default=True, help='(optional) True or False, set the unsupervised mode parameters -D and -w automatically',)
+parser.add_argument('-plot', "--visualization", type=lambda x: (str(x).lower() == 'true'), default=False, help='(optional) True or False, plot PCA and heatmap based on DMR methylation',)
 parser.add_argument('-anno', "--annotation", help='(optional) hg19 or hg38, use ChIPseeker to annotate the DMRs',)
 parser.add_argument('-refs', "--refSeq", help='(optional) reference genome, for sequence annotation',)
 parser.add_argument('-gsea', "--genesets", help='(optional) geneset gmt file for GSEA',)
-parser.add_argument('-wsup', "--withSupervised", help='(optional) run supervised mode on clusters after unsupervised mode', type=lambda x: (str(x).lower() == 'true'), default=True)
-parser.add_argument('-pdrl', "--pandarallel", help='(optional) run Kruskal-Wallis-Test with pandarallel', type=lambda x: (str(x).lower() == 'true'), default=False)
+parser.add_argument('-wsup', "--withSupervised", help='(optional) True or False, run supervised mode on clusters after unsupervised mode', type=lambda x: (str(x).lower() == 'true'), default=True)
+parser.add_argument('-pdrl', "--pandarallel", help='(optional) True or False, run Kruskal-Wallis-Test with pandarallel', type=lambda x: (str(x).lower() == 'true'), default=False)
 parser.add_argument('--version', action='version', version=f'%(prog)s {VERSION}', help='Get the version of metilene3',)
-parser.add_argument('-test', "--test", help='(optional) run on the test dataset', type=lambda x: (str(x).lower() == 'true'), default=False)
+parser.add_argument('-test', "--test", help='(optional) True or False, run on the test dataset', type=lambda x: (str(x).lower() == 'true'), default=False)
 parser.add_argument('-udmr', "--unsupervisedDMRs", help='(optional) the metilene3 unsupervised DMRs',)
 
 # hidden
@@ -1194,6 +1195,22 @@ def checkParams(args):
          
     return msg
 
+
+def bestw(N, ncpg, refw):
+    refncpg = -1+2702583
+    refN = 50
+    
+    alpha = 1+((refN-1)/(N-1))*(refw-1)
+    beta = ncpg/refncpg
+    w = alpha*beta
+
+    if w<5:
+        return 1
+    elif w <50:
+        return 10
+    else:
+        return 100
+    
 def main():
     start_time = time.ctime()
     args = parser.parse_args()
@@ -1228,9 +1245,15 @@ def main():
         report_sup(args, start_time, end_time, mout)
         print(end_time,": Finished.")
     else:
-        print(time.ctime(),": Running unsupervised mode...")
+        print(time.ctime(),": Running unsupervised mode...")        
         headerfile = args.output+'/'+args.input.split('/')[-1]+'.unsup.header'
         preprocess(args, headerfile, 'unsup')
+
+        N = pd.read_table(headerfile).shape[1]-2
+        if int(N/2)<args.minNSamples:
+            print('Warning: minimal samples -n (n='+str(args.minNSamples)+') > N/2 (N='+str(N)+'). Using '+str(int(N/2))+' for minimal samples.')
+            args.minNSamples = int(N/2)
+        
         if args.unsupervisedDMRs:
             unmout = commented_read_table(args.unsupervisedDMRs)
         else:
@@ -1241,21 +1264,42 @@ def main():
             print(end_time,": Finished.")
             return
         print(time.ctime(),": Clustering...")
-        
+
+        if args.automatic and not args.unsupervisedDMRs:
+            ncpg = int(pd.read_table(args.output+'/DMRs-unsupervised.tsv',nrows=0).columns[0].split(':')[-1])
+            print('Using the first suggested parameter set.')
+            args.minSumDMRs = bestw(N, ncpg, 10)
+            
         finalCls, cls = clustering(unmout, args)
         if finalCls is None:
-            print('Warning: No cluster found. Please check the data or use smaller meandiff for clustering.')
-            end_time = time.ctime()
-            headerfile = args.output+'/'+args.input.split('/')[-1]+'.header'
-            finalCls = pd.read_table(args.input, nrows=0).T[2:]
-            finalCls['Group'] = finalCls.index
-            finalCls['Group_ID'] = range(len(finalCls.index))
-            finalCls.to_csv(args.output+'/group-ID.tsv', sep='\t', index=False)
-            args.groupinfo = 1
-            report_nocls(args, start_time, end_time, unmout)
-            os.system("rm "+args.output+"/group-ID.tsv")
-            print(end_time,": Finished.")
-            return None
+            if args.automatic and not args.unsupervisedDMRs:
+                print('Warning: No cluster found. Trying the second suggested parameter set.')
+                args.minMethDiffHigh = 0.25
+                args.minSumDMRs = bestw(N, ncpg, 1)
+                
+                headerfile = args.output+'/'+args.input.split('/')[-1]+'.unsup.header'
+                preprocess(args, headerfile, 'unsup')
+                runMetilene(args, headerfile, 'unsup')
+                unmout = processOutput(args, 'unsup', anno='T')
+                if unmout is None:
+                    end_time = time.ctime()
+                    print(end_time,": Finished.")
+                    return
+                print(time.ctime(),": Clustering...")
+                finalCls, cls = clustering(unmout, args)
+            else:
+                print('Warning: No cluster found. Please check the data or use smaller -D and/or -n and/or smaller -w for clustering.')
+                end_time = time.ctime()
+                headerfile = args.output+'/'+args.input.split('/')[-1]+'.header'
+                finalCls = pd.read_table(args.input, nrows=0).T[2:]
+                finalCls['Group'] = finalCls.index
+                finalCls['Group_ID'] = range(len(finalCls.index))
+                finalCls.to_csv(args.output+'/group-ID.tsv', sep='\t', index=False)
+                args.groupinfo = 1
+                report_nocls(args, start_time, end_time, unmout)
+                os.system("rm "+args.output+"/group-ID.tsv")
+                print(end_time,": Finished.")
+                return None
 
         unmout = addDMTree2DMR(args, 'unsup', cls, finalCls)
         
