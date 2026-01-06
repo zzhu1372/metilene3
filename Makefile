@@ -1,6 +1,6 @@
   CC=gcc
   LD=${CC} 
-  CFLAGS= -Wall -pedantic -std=c99 -O3 -D_GNU_SOURCE_ -g  -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64 -DDBGLEVEL=0 -DPROGNFO -I -Lsrc -DPCGRNG
+  CFLAGS= -Wall -pedantic -std=c99 -O0 -D_GNU_SOURCE_ -g  -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64 -DDBGLEVEL=0 -DPROGNFO -I -Lsrc -DPCGRNG
   LDFLAGS=-lm -lpthread 
   CTAGS=ctags > tags
   LIBS=
