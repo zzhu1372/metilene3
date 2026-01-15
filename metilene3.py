@@ -389,7 +389,10 @@ def addANOVA(dmrs, met, grp, dmrmet_path, anova, nthreads, pandarallel):
         pval = dmrmet.apply(lambda x:kruskal(*grpseg(x,grprange),nan_policy='omit')[1], axis=1).T
 
     dmrs['p-kwt'] = dmrs['dmrid'].map(pval)
-    dmrs = dmrs.loc[dmrs['p-kwt']<anova]
+    if (dmrs['p-kwt']<anova).sum()<1:
+        print("Warning: no DMRs detected under P="+str(anova)+", reporting DMRs with P>"+str(anova))
+    else:
+        dmrs = dmrs.loc[dmrs['p-kwt']<anova]
     dmrmet = dmrmet.loc[dmrs['dmrid']]
     dmrmet.to_csv(dmrmet_path, sep='\t')
     return dmrs.drop(columns=['dmrid'])
