@@ -360,7 +360,19 @@ def processOutput(args, ifsup, anno='F'):
                     
     return mout
 
-
+def adjust_BH(x):
+    m = len(x)
+    rnkdf = pd.DataFrame(list(x.rank()),list(x)).sort_index(ascending=False)
+    rnkdf[1] = rnkdf.index*m/rnkdf[0]
+    newP = []
+    lastP = 1
+    for i in rnkdf[1]:
+        if i<lastP:
+            lastP = i
+        newP.append(lastP)
+    rnkdf[2] = newP
+    return x.map(rnkdf[2].to_dict())
+    
 def addANOVA(dmrs, met, grp, dmrmet_path, anova, nthreads, pandarallel):
     dmrs['dmrid'] = dmrs['chr'].astype(str)+'-'+dmrs['start'].astype(str)+'-'+dmrs['stop'].astype(str)
 
