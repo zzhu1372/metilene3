@@ -3864,7 +3864,8 @@ int main(int argc, char** argv) {
 
       if (nfo.clustering==1)
       {
-        if(nfo.outputList->segment_out[i].meandiff >= nfo.minMethDist || nfo.outputList->segment_out[i].meandiff <= -1* nfo.minMethDist) {
+        // if(nfo.outputList->segment_out[i].meandiff >= nfo.minMethDist || nfo.outputList->segment_out[i].meandiff <= -1* nfo.minMethDist) {
+		if(1) {
           // fprintf(stderr, "TEST %d: %d,%d.\n",i,nfo.outputList->segment_out[i].start,nfo.outputList->segment_out[i].stop);
           fprintf(stdout, "%s\t%d\t%d\t%.5g\t%f\t%d\t%.5g\t%.5g\t%s\t%s\n", 
                   nfo.outputList->segment_out[i].chr,
@@ -3880,7 +3881,8 @@ int main(int argc, char** argv) {
                   nfo.outputList->segment_out[i].methB);
         }
       } else {
-        if(nfo.outputList->segment_out[i].meandiff >= nfo.minMethDist || nfo.outputList->segment_out[i].meandiff <= -1* nfo.minMethDist) {
+        // if(nfo.outputList->segment_out[i].meandiff >= nfo.minMethDist || nfo.outputList->segment_out[i].meandiff <= -1* nfo.minMethDist) {
+		if(1) {
           // fprintf(stderr, "TEST %d: %d,%d.\n",i,nfo.outputList->segment_out[i].start,nfo.outputList->segment_out[i].stop);
           fprintf(stdout, "%s\t%d\t%d\t%.5g\t%f\t%d\t%.5g\t%.5g\t%s\t%f\n", 
                   nfo.outputList->segment_out[i].chr,
@@ -3906,7 +3908,8 @@ int main(int argc, char** argv) {
     multiple_testing_correction(nfo.outputList, nfo.mode, nfo.mtc);
     if(verbose){fprintf(stderr, "Multiple testing correction done.\n");}
     for(int i=0;i<nfo.outputList->i;i++){
-      if(nfo.outputList->segment_out[i].meandiff >= nfo.minMethDist || nfo.outputList->segment_out[i].meandiff <= -1* nfo.minMethDist) {
+      // if(nfo.outputList->segment_out[i].meandiff >= nfo.minMethDist || nfo.outputList->segment_out[i].meandiff <= -1* nfo.minMethDist) {
+	  if(1) {
         fprintf(stdout, "%s\t%d\t%d\t%.5g\t%f\t%d\t%.5g\t%s\n", 
                 nfo.outputList->segment_out[i].chr,
                 nfo.outputList->segment_out[i].start,
