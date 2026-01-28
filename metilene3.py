@@ -333,10 +333,12 @@ def processOutput(args, ifsup, anno='F'):
         mout['Int-groups'] = mout['sig.comparison'].apply(sigcom2inter).apply(lambda x:','.join(sorted([rename_cls[i] for i in x])))\
                                                                                                                             .apply(lambda x:x if x!='' else '-')
         mout['Hyper-groups'] = mout['sig.comparison'].apply(sigcom2hyper).apply(lambda x:','.join(sorted([rename_cls[i] for i in x])))
+        
+        ntest = int(pd.read_table(args.output+'/DMRs.tsv',nrows=0,skiprows=1).columns[0].split(':')[-1])
         if args.groupinfo:
-            mout = addANOVA(mout, args.input, args.groupinfo, args.output+'/DMR-met.tsv', args.anova, args.threads, args.pandarallel)
+            mout = addANOVA(mout, args.input, args.groupinfo, args.output+'/DMR-met.tsv', args.anova, ntest, args.threads, args.pandarallel)
         else:
-            mout = addANOVA(mout, args.input, args.output+'/clusters.tsv', args.output+'/DMR-met.tsv', args.anova, args.threads, args.pandarallel)
+            mout = addANOVA(mout, args.input, args.output+'/clusters.tsv', args.output+'/DMR-met.tsv', args.anova, ntest, args.threads, args.pandarallel)
         # mout = mout.loc[mout['p-kwt']<args.anova]
 
     # print('# of processed DMRs:',mout.shape[0])
@@ -360,10 +362,9 @@ def processOutput(args, ifsup, anno='F'):
                     
     return mout
 
-def adjust_BH(x):
-    m = len(x)
+def adjust_BH(x, m):
     rnkdf = pd.DataFrame(list(x.rank()),list(x)).sort_index(ascending=False)
-    rnkdf[1] = rnkdf.index*m/rnkdf[0]
+    rnkdf[1] = (rnkdf.index*m/rnkdf[0]).apply(lambda x:min(1,x))
     newP = []
     lastP = 1
     for i in rnkdf[1]:
@@ -373,7 +374,7 @@ def adjust_BH(x):
     rnkdf[2] = newP
     return x.map(rnkdf[2].to_dict())
     
-def addANOVA(dmrs, met, grp, dmrmet_path, anova, nthreads, pandarallel):
+def addANOVA(dmrs, met, grp, dmrmet_path, anova, ntest, nthreads, pandarallel):
     dmrs['dmrid'] = dmrs['chr'].astype(str)+'-'+dmrs['start'].astype(str)+'-'+dmrs['stop'].astype(str)
 
     dmrs[['chr','start','stop']].to_csv(dmrmet_path+'.bed', sep='\t', header=False, index=False)
@@ -401,8 +402,10 @@ def addANOVA(dmrs, met, grp, dmrmet_path, anova, nthreads, pandarallel):
         pval = dmrmet.apply(lambda x:kruskal(*grpseg(x,grprange),nan_policy='omit')[1], axis=1).T
 
     dmrs['p-kwt'] = dmrs['dmrid'].map(pval)
+    dmrs['fdr-kwt'] = adjust_BH(dmrs['p-kwt'], ntest)
+    dmrs['q'] = adjust_BH(dmrs['p'], ntest)
     if (dmrs['p-kwt']<anova).sum()<1:
-        print("Warning: no DMRs detected under P="+str(anova)+", reporting DMRs with P>"+str(anova))
+        print("Warning: no DMRs detected under P<"+str(anova)+", reporting DMRs with P>="+str(anova))
     else:
         dmrs = dmrs.loc[dmrs['p-kwt']<anova]
     dmrmet = dmrmet.loc[dmrs['dmrid']]
