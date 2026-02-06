@@ -8,7 +8,7 @@ import pandas as pd
 import warnings
 warnings.filterwarnings('ignore')
 
-VERSION = 3.0
+VERSION = 3.1
 
 ###################################################################################################
 # Input
