@@ -129,7 +129,7 @@ static void read_bed(const char *bedfile, IntervalArray *ia) {
                 /* generate name chr-start-end */
                 size_t bufcap = strlen(chr) + 1 + 32 + 1 + 32 + 1;
                 name = malloc(bufcap);
-                snprintf(name, bufcap, "%s-%lld-%lld", chr, (long long)start, (long long)end);
+                snprintf(name, bufcap, "%s:%lld-%lld", chr, (long long)start, (long long)end);
             }
             Interval iv;
             iv.chr = chr;
