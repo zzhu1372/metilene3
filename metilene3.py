@@ -375,7 +375,7 @@ def adjust_BH(x, m):
     return x.map(rnkdf[2].to_dict())
     
 def addANOVA(dmrs, met, grp, dmrmet_path, anova, ntest, nthreads, pandarallel):
-    dmrs['dmrid'] = dmrs['chr'].astype(str)+'-'+dmrs['start'].astype(str)+'-'+dmrs['stop'].astype(str)
+    dmrs['dmrid'] = dmrs['chr'].astype(str)+':'+dmrs['start'].astype(str)+'-'+dmrs['stop'].astype(str)
 
     dmrs[['chr','start','stop']].to_csv(dmrmet_path+'.bed', sep='\t', header=False, index=False)
     os.system(os.path.realpath(__file__).replace('metilene3.py','bedavg')+' '+met+' '+dmrmet_path+'.bed  '+dmrmet_path)
@@ -712,7 +712,7 @@ def plotClustermap(mout, cls, reportPath, sids, finalCls, cls_full):
             return 0
         return num/all
         
-    denovo_pn2 = mout[['mean','sig.comparison','sig.comparison.bin']]
+    denovo_pn2 = mout[['chr','start','stop','mean','sig.comparison','sig.comparison.bin']]
     denovo_pn2['tmp'] = 0
     c = np.int64(2**61)
     def allrelated(x):
@@ -738,6 +738,7 @@ def plotClustermap(mout, cls, reportPath, sids, finalCls, cls_full):
     
     dmrmean_m = pd.DataFrame(dmrmean_m)
     dmrmean_m = dmrmean_m.astype(float)
+    dmrmean_m.index = denovo_filtered['chr']+':'+denovo_filtered['start'].astype(int).astype(str)+'-'+denovo_filtered['stop'].astype(int).astype(str)
     dmrmean_m.columns = sids
     dmrmean_m = dmrmean_m[dmrcluster_m.index].T
     
@@ -753,12 +754,12 @@ def plotClustermap(mout, cls, reportPath, sids, finalCls, cls_full):
     dmrmean_m_rename = dmrmean_m.loc[dmrcluster_m.index].copy()
     dmrmean_m_rename.index = dmrmean_m_rename.index.map(clsD)+' '+dmrmean_m_rename.index
     dmrmean_m_rename.to_csv(reportPath+'heatmap.tsv', sep='\t')
-    dmrmean_m_rename_anno = pd.DataFrame(list(denovo_filtered['sig.comparison']),dmrmean_m_rename.columns)
-    dmrmean_m_rename_anno.to_csv(reportPath+'heatmap.anno.tsv', sep='\t')
+    # dmrmean_m_rename_anno = pd.DataFrame(list(denovo_filtered['sig.comparison']),dmrmean_m_rename.columns)
+    # dmrmean_m_rename_anno.to_csv(reportPath+'heatmap.anno.tsv', sep='\t')
     if dmrmean_m.shape[1]>1:
         cm = sns.clustermap(dmrmean_m_rename,\
             row_colors=[dmrmean_m.index.map(cmap),\
-                        (dmrmean_m[0]=='NO').map({False:'white'})],\
+                        dmrmean_m.index.map({i:'white' for i in dmrmean_m.index})],\
             # row_linkage=lk.linkage,\
             col_cluster=False,row_cluster=False,\
             cmap='Spectral_r', figsize=[0.2*len(sids)+0.1*max([len(i) for i in sids]),0.2*len(sids)], dendrogram_ratio=0.000001, xticklabels=False, yticklabels=True, \
@@ -768,7 +769,7 @@ def plotClustermap(mout, cls, reportPath, sids, finalCls, cls_full):
     else:
         cm = sns.clustermap(dmrmean_m_rename,\
             row_colors=[dmrmean_m.index.map(cmap),\
-                        (dmrmean_m[0]=='NO').map({False:'white'})],\
+                        dmrmean_m.index.map({i:'white' for i in dmrmean_m.index})],\
             # row_linkage=lk.linkage,\
             col_cluster=False,row_cluster=False,\
             cmap='Spectral_r', figsize=[0.2*len(sids)+0.1*max([len(i) for i in sids]),0.2*len(sids)], dendrogram_ratio=0.000001, xticklabels=False, yticklabels=True, \
