@@ -763,7 +763,8 @@ def plotClustermap(mout, cls, reportPath, sids, finalCls, cls_full):
             # row_linkage=lk.linkage,\
             col_cluster=False,row_cluster=False,\
             cmap='Spectral_r', figsize=[0.2*len(sids)+0.1*max([len(i) for i in sids]),0.2*len(sids)], dendrogram_ratio=0.000001, xticklabels=False, yticklabels=True, \
-            method='ward', cbar_pos=None, vmax=1, vmin=0, center=0.5, colors_ratio=0.02)
+            method='ward', vmax=1, vmin=0, center=0.5, colors_ratio=0.02)
+        cm.cax.set_position([1, 0.35, 0.03, 0.3])
         plt.savefig(reportPath+'heatmap.jpg', bbox_inches='tight')
         plt.savefig(reportPath+'heatmap.pdf', bbox_inches='tight')
     else:
