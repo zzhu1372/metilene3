@@ -466,7 +466,7 @@ def addDMTree2DMR(args, ifsup, cls, finalCls):
         mout['DMTree'] = ''
         for i in cls[0]:
             mout['DMTree'] += mout['sig.comparison.bin'].apply(lambda x:findDMTreeID(i,x,cls_id[i]+',','P'))
-            mout['DMTree'] += mout['sig.comparison'].apply(lambda x:findDMTreeID(rev123(i),x,cls_id[i]+',','N'))
+            mout['DMTree'] += mout['sig.comparison.bin'].apply(lambda x:findDMTreeID(rev123(i),x,cls_id[i]+',','N'))
 
     else:
         cls_id = {}
