@@ -7,15 +7,40 @@ Please see the [metilene<sup>3</sup>-doc](https://zzhu1372.github.io/metilene3-d
 ![alt text](https://zzhu1372.github.io/metilene3-doc/fig/framework.png "framework")
 
 ## Installation
-You can download and install metilene<sup>3</sup> on Linux, WSL and macOS from this GitHub repo:
-```
 git clone https://github.com/zzhu1372/metilene3.git
 cd ./metilene3
+
+### Option 1: Using Pixi (Recommended for development)
+If you use [Pixi](https://pixi.sh), you can set up the environment and run tasks instantly:
+pixi install
+pixi run test
+
+### Option 2: Using containers (Docker & Apptainer)
+
+#### Docker
+Build the Docker image locally from the repository root:
+```bash
+docker build -t metilene3:latest .
+# Run metilene3 using Docker:
+docker run --rm -v $(pwd):/data metilene3:latest -i demo_input.tsv -g group_info.tsv -o demo_output
+```
+
+#### Apptainer / Singularity
+Build the Singularity image from the provided recipe:
+```
+apptainer build metilene3.sif Singularity
+# Run metilene3 using Apptainer:
+./metilene3.sif -i demo_input.tsv -g group_info.tsv -o demo_output
+```
+
+### Option 3: Using Make & Conda / Mamba
+Compile locally using make:
+```
 make
 ```
 Dependencies can be installed with conda:
 ```
-conda create -y -n metilene3 -c bioconda -c conda-forge python==3.10.0 pandas pandarallel scikit-learn seaborn biopython gseapy r-base bioconductor-ChIPseeker bioconductor-org.Hs.eg.db bioconductor-txdb.hsapiens.ucsc.hg19.knowngene bioconductor-txdb.hsapiens.ucsc.hg38.knowngene
+conda create -y -n metilene3 -c bioconda -c conda-forge python==3.10.0 pandas numpy matplotlib pandarallel scikit-learn seaborn biopython gseapy r-base bioconductor-ChIPseeker bioconductor-org.Hs.eg.db bioconductor-txdb.hsapiens.ucsc.hg19.knowngene bioconductor-txdb.hsapiens.ucsc.hg38.knowngene
 conda activate metilene3
 ```
 Please check [here](https://zzhu1372.github.io/metilene3-doc/docs/guide/installation.html) for more details.
