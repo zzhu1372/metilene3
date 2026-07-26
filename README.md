@@ -26,7 +26,7 @@ Build the Docker image locally from the repository root:
 ```bash
 docker build -t metilene3:latest .
 # Run metilene3 using Docker:
-docker run --rm -v $(pwd):/data metilene3:latest -i demo_input.tsv -g group_info.tsv -o demo_output
+docker run --rm -v $(pwd):/data metilene3:latest -i demo_input.tsv -o demo_output
 ```
 
 #### Apptainer / Singularity
@@ -34,7 +34,7 @@ Build the Singularity image from the provided recipe:
 ```
 apptainer build metilene3.sif Singularity
 # Run metilene3 using Apptainer:
-./metilene3.sif -i demo_input.tsv -g group_info.tsv -o demo_output
+./metilene3.sif -i demo_input.tsv -o demo_output
 ```
 
 ### Option 3: Using Make & Conda / Mamba
