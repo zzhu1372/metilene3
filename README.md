@@ -31,7 +31,7 @@ docker run --rm -v $(pwd):/data metilene3:latest -i demo_input.tsv -o demo_outpu
 
 #### Apptainer / Singularity
 Build the Singularity image from the provided recipe:
-```
+```bash
 apptainer build metilene3.sif Singularity
 # Run metilene3 using Apptainer:
 ./metilene3.sif -i demo_input.tsv -o demo_output
@@ -47,14 +47,13 @@ Dependencies can be installed with conda:
 conda create -y -n metilene3 -c bioconda -c conda-forge python==3.10.0 pandas numpy matplotlib pandarallel scikit-learn seaborn biopython gseapy r-base bioconductor-ChIPseeker bioconductor-org.Hs.eg.db bioconductor-txdb.hsapiens.ucsc.hg19.knowngene bioconductor-txdb.hsapiens.ucsc.hg38.knowngene
 conda activate metilene3
 ```
-Please check [here](https://zzhu1372.github.io/metilene3-doc/docs/guide/installation.html) for more details.
-
-## Quick Start
 After installation, you can test metilene<sup>3</sup> with the included test dataset ``demo_input.tsv``:
 ```
 python ./metilene3.py -test True -o demo_output
 ```
-You should get these files in the ``demo_output`` folder:
+Please check [here](https://zzhu1372.github.io/metilene3-doc/docs/guide/installation.html) for more details.
+
+Using any of the options above, You should get these files in the ``demo_output`` folderi when testing:
 ```
 DMRs-unsupervised.tsv
 DMRs.tsv
