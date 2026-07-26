@@ -7,15 +7,17 @@ Please see the [metilene<sup>3</sup>-doc](https://zzhu1372.github.io/metilene3-d
 ![alt text](https://zzhu1372.github.io/metilene3-doc/fig/framework.png "framework")
 
 ## Installation
-```
+```bash
 git clone https://github.com/zzhu1372/metilene3.git
 cd ./metilene3
 ```
 
 ### Option 1: Using Pixi (Recommended for development)
 If you use [Pixi](https://pixi.sh), you can set up the environment and run tasks instantly:
+```bash
 pixi install
 pixi run test
+```
 
 ### Option 2: Using containers (Docker & Apptainer)
 
@@ -37,7 +39,7 @@ apptainer build metilene3.sif Singularity
 
 ### Option 3: Using Make & Conda / Mamba
 Compile locally using make:
-```
+```bash
 make
 ```
 Dependencies can be installed with conda:
