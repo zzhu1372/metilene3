@@ -1238,7 +1238,6 @@ def main():
     # print(args)
     if args.test:
         args.input = os.path.realpath(__file__).replace('metilene3.py','demo_input.tsv')
-        args.minSumDMRs = 0
     msg = checkParams(args)
     if msg:
         print(msg)
@@ -1289,6 +1288,9 @@ def main():
             ncpg = int(pd.read_table(args.output+'/DMRs-unsupervised.tsv',nrows=0).columns[0].split(':')[-1])
             print('Using the first suggested parameter set.')
             args.minSumDMRs = bestw(N, ncpg, 10)
+
+        if args.test:
+            args.minSumDMRs = 0
             
         finalCls, cls = clustering(unmout, args)
         if finalCls is None:
@@ -1307,6 +1309,19 @@ def main():
                     return
                 print(time.ctime(),": Clustering...")
                 finalCls, cls = clustering(unmout, args)
+                if finalCls is None:
+                    print('Warning: No cluster found. Please check the data or use smaller -D and/or -n and/or smaller -w for clustering.')
+                    end_time = time.ctime()
+                    headerfile = args.output+'/'+args.input.split('/')[-1]+'.header'
+                    finalCls = pd.read_table(args.input, nrows=0).T[2:]
+                    finalCls['Group'] = finalCls.index
+                    finalCls['Group_ID'] = range(len(finalCls.index))
+                    finalCls.to_csv(args.output+'/group-ID.tsv', sep='\t', index=False)
+                    args.groupinfo = 1
+                    report_nocls(args, start_time, end_time, unmout)
+                    os.system("rm "+args.output+"/group-ID.tsv")
+                    print(end_time,": Finished.")
+                    return None
             else:
                 print('Warning: No cluster found. Please check the data or use smaller -D and/or -n and/or smaller -w for clustering.')
                 end_time = time.ctime()
@@ -1346,7 +1361,7 @@ def main():
         mout = addDMTree2DMR(args, 'sup', cls, finalCls)
 
         end_time = time.ctime()
-        print(mout.shape,unmout.shape)
+        # print(mout.shape,unmout.shape)
         report_unsup(args, start_time, end_time, unmout, finalCls.drop(columns=cls[0]), mout)
         print(end_time,": Finished.")
 
