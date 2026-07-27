@@ -8,7 +8,7 @@ import pandas as pd
 import warnings
 warnings.filterwarnings('ignore')
 
-VERSION = 3.1
+VERSION = '3.1.1'
 
 ###################################################################################################
 # Input
@@ -44,7 +44,7 @@ parser.add_argument('-refs', "--refSeq", help='(optional) reference genome, for 
 parser.add_argument('-gsea', "--genesets", help='(optional) geneset gmt file for GSEA',)
 parser.add_argument('-wsup', "--withSupervised", help='(optional) True or False, run supervised mode on clusters after unsupervised mode', type=lambda x: (str(x).lower() == 'true'), default=True)
 parser.add_argument('-pdrl', "--pandarallel", help='(optional) True or False, run Kruskal-Wallis-Test with pandarallel', type=lambda x: (str(x).lower() == 'true'), default=False)
-parser.add_argument('--version', action='version', version=f'%(prog)s {VERSION}', help='Get the version of metilene3',)
+parser.add_argument('--version', action='version', version=VERSION, help='Get the version of metilene3',)
 parser.add_argument('-test', "--test", help='(optional) True or False, run on the test dataset', type=lambda x: (str(x).lower() == 'true'), default=False)
 parser.add_argument('-udmr', "--unsupervisedDMRs", help='(optional) the metilene3 unsupervised DMRs',)
 
