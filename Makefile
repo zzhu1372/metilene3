@@ -18,7 +18,7 @@
 	src/mtc.o\
 	src/metseg.o
 
-all: metilene bedavg
+all: metilene bedavg bedmet
 
 metilene: ${METSEGOBJ}
 	gcc $(CFLAGS) ${METSEGOBJ} -o metilene $(LDFLAGS)
@@ -26,7 +26,10 @@ metilene: ${METSEGOBJ}
 bedavg: src/bedavg.c
 	gcc $(CFLAGS) src/bedavg.c -o bedavg $(LDFLAGS)
 
+bedmet: src/bedmet.c
+	gcc $(CFLAGS) src/bedmet.c -o bedmet $(LDFLAGS)
+
 clean:
-	rm -rf src/*.o metilene
+	rm -rf src/*.o metilene bedavg bedmet
 
 .PHONY: all clean
