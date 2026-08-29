@@ -1,0 +1,26 @@
+[workspace]
+name = "metilene3"
+channels = ["conda-forge", "bioconda"]
+platforms = ["linux-64", "osx-64", "osx-arm64"]
+
+[dependencies]
+python = "==3.10.0"
+pandas = "*"
+numpy = "*"
+matplotlib = "*"
+pandarallel = "*"
+scikit-learn = "*"
+seaborn = "*"
+biopython = { version = "*", channel = "conda-forge" }
+gseapy = "*"
+r-base = "*"
+"bioconductor-chipseeker" = "*"
+"bioconductor-org.hs.eg.db" = "*"
+"bioconductor-txdb.hsapiens.ucsc.hg19.knowngene" = "*"
+"bioconductor-txdb.hsapiens.ucsc.hg38.knowngene" = "*"
+make = "*"
+c-compiler = "*"
+
+[tasks]
+build = "make"
+test = { cmd = "python metilene3.py -test True -o $INIT_CWD/demo_output", depends-on = ["build"] }
