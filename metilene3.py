@@ -3,12 +3,13 @@ import os
 import sys
 import time
 import argparse
+import shlex
 import numpy as np
 import pandas as pd
 import warnings
 warnings.filterwarnings('ignore')
 
-VERSION = '3.1.1'
+VERSION = '3.1.2'
 
 ###################################################################################################
 # Input
@@ -16,6 +17,7 @@ VERSION = '3.1.1'
 parser = argparse.ArgumentParser(description='.')
 # IO
 parser.add_argument('-i', "--input", help='the input methylation data',)
+parser.add_argument('-b', '--subset', metavar='FILE', help='(optional) the subset of samples, a file with one sample ID per line',)
 parser.add_argument('-g', "--groupinfo", help='(optional) the input group information table',)
 parser.add_argument('-o', "--output", help='the output directory',)
 # system
@@ -98,12 +100,42 @@ def getMetilene():
 ###################################################################################################
 # Run
 ###################################################################################################
+def inputHeader(args):
+    cols = pd.read_table(args.input, nrows=0)
+    groupinfo = getattr(args, 'groupinfo', None)
+    if isinstance(groupinfo, (str, os.PathLike)):
+        selected = list(pd.read_table(groupinfo, dtype={'ID': str})['ID'])
+        source = '-g'
+    elif args.subset is None:
+        return cols
+    else:
+        with open(args.subset) as samples:
+            selected = [line.strip() for line in samples if line.strip()]
+        source = '--subset'
+    if not selected:
+        raise ValueError(source+' must contain at least one sample ID.')
+    missing = sorted(set(selected) - set(cols.columns[2:]))
+    if missing:
+        raise ValueError('Unknown sample IDs in '+source+': '+', '.join(missing))
+    selected = set(selected)
+    return cols[list(cols.columns[:2])+[sample for sample in cols.columns[2:] if sample in selected]]
+
+
+def inputCommand(args):
+    if args.subset is None and not isinstance(getattr(args, 'groupinfo', None), (str, os.PathLike)):
+        return '', shlex.quote(args.input)
+    selected = set(inputHeader(args).columns[2:])
+    columns = pd.read_table(args.input, nrows=0).columns
+    fields = [1, 2]+[i+1 for i, sample in enumerate(columns) if i >= 2 and sample in selected]
+    return ('cut -f'+','.join(map(str, fields))+' '+shlex.quote(args.input)+' | ', '/dev/stdin')
+
+
 def preprocess(args, headerfile, ifsup, grpinfo=None):
     # if args.skipMetilene:
     #     return None
     
     if ifsup=='unsup':
-        cols = pd.read_table(args.input, nrows=0)
+        cols = inputHeader(args)
         newcols = list(cols.columns)
         # print(newcols)
         for i in range(len(newcols))[2:]:
@@ -112,7 +144,7 @@ def preprocess(args, headerfile, ifsup, grpinfo=None):
         cols.to_csv(headerfile, sep='\t', index=False)
         
     else:
-        cols = pd.read_table(args.input, nrows=0)
+        cols = inputHeader(args)
         newcols = list(cols.columns)
         
         grp = pd.read_table(grpinfo, index_col='ID')['Group'].astype(str)
@@ -145,9 +177,10 @@ def preprocess(args, headerfile, ifsup, grpinfo=None):
 def runMetilene(args, headerfile, ifsup):
     if args.skipMetilene:
         return None
-    # print(os.path.realpath(__file__))
+    prefix, metinput = inputCommand(args)
+    executable = shlex.quote(os.path.realpath(__file__).replace('metilene3.py','metilene'))
     if ifsup=='unsup':
-        os.system(os.path.realpath(__file__).replace('metilene3.py','metilene')+\
+        os.system(prefix+executable+\
                     " -t "+str(args.threads)+\
                     " -s "+str(args.seed)+\
                     " -p "+str(args.verbose*1)+\
@@ -162,12 +195,12 @@ def runMetilene(args, headerfile, ifsup):
                     " -e "+str(args.clusteringRatio)+\
                     " -q "+str(args.minMethDiffHigh)+\
                     
-                    " -H "+headerfile+\
-                    " -l 1 "+args.input+" > "+\
-                    args.output+'/DMRs-unsupervised.tsv' )
+                    " -H "+shlex.quote(headerfile)+\
+                    " -l 1 "+metinput+" > "+\
+                    shlex.quote(args.output+'/DMRs-unsupervised.tsv') )
 
     else:
-        os.system(os.path.realpath(__file__).replace('metilene3.py','metilene')+\
+        os.system(prefix+executable+\
                     " -t "+str(args.threads)+\
                     " -s "+str(args.seed)+\
                     " -p "+str(args.verbose*1)+\
@@ -184,17 +217,16 @@ def runMetilene(args, headerfile, ifsup):
                     " -e "+str(args.clusteringRatio)+\
                     " -q "+str(args.minMethDiff)+\
                     
-                    " -H "+headerfile+\
-                    " -l 1 "+args.input+" > "+\
-                    args.output+'/'+args.input.split('/')[-1]+'.aout' )
+                    " -H "+shlex.quote(headerfile)+\
+                    " -l 1 "+metinput+" > "+\
+                    shlex.quote(args.output+'/'+args.input.split('/')[-1]+'.aout') )
                     
         if args.outputImputed:
             os.system("grep -v \'//Imputed:\' "+\
             args.output+'/'+args.input.split('/')[-1]+'.aout >' + \
             args.output+'/DMRs.tsv')
             
-            os.system("head -n1 "+args.input+" > "+\
-                        args.output+'/'+args.input.split('/')[-1]+'.imputed')
+            inputHeader(args).to_csv(args.output+'/'+args.input.split('/')[-1]+'.imputed', sep='\t', index=False)
                         
             os.system("grep \'//Imputed:\' "+\
             args.output+'/'+args.input.split('/')[-1]+r".aout|sed 's/\/\/Imputed://' >>" + \
@@ -320,7 +352,7 @@ def processOutput(args, ifsup, anno='F'):
         return y
     
     if ifsup=='unsup':
-        sids = [str(i) for i in pd.read_table(args.input, nrows=0).columns[2:]]
+        sids = [str(i) for i in inputHeader(args).columns[2:]]
         mout['Hypo-samples'] = mout['sig.comparison'].apply(sigcom2hypo).apply(lambda x:','.join(sorted([str(sids[i]) for i in x])))
         mout['Int-samples'] = mout['sig.comparison'].apply(sigcom2inter).apply(lambda x:','.join(sorted([str(sids[i]) for i in x])))\
                                                                                                                             .apply(lambda x:x if x!='' else '-')
@@ -336,9 +368,9 @@ def processOutput(args, ifsup, anno='F'):
         
         ntest = int(pd.read_table(args.output+'/DMRs.tsv',nrows=0,skiprows=1).columns[0].split(':')[-1])
         if args.groupinfo:
-            mout = addANOVA(mout, args.input, args.groupinfo, args.output+'/DMR-met.tsv', args.anova, ntest, args.threads, args.pandarallel)
+            mout = addANOVA(mout, args.input, args.groupinfo, args.output+'/DMR-met.tsv', args.anova, ntest, args.threads, args.pandarallel, args.subset)
         else:
-            mout = addANOVA(mout, args.input, args.output+'/clusters.tsv', args.output+'/DMR-met.tsv', args.anova, ntest, args.threads, args.pandarallel)
+            mout = addANOVA(mout, args.input, args.output+'/clusters.tsv', args.output+'/DMR-met.tsv', args.anova, ntest, args.threads, args.pandarallel, args.subset)
         # mout = mout.loc[mout['p-kwt']<args.anova]
 
     # print('# of processed DMRs:',mout.shape[0])
@@ -374,16 +406,18 @@ def adjust_BH(x, m):
     rnkdf[2] = newP
     return x.map(rnkdf[2].to_dict())
     
-def addANOVA(dmrs, met, grp, dmrmet_path, anova, ntest, nthreads, pandarallel):
+def addANOVA(dmrs, met, grp, dmrmet_path, anova, ntest, nthreads, pandarallel, subset=None):
     dmrs['dmrid'] = dmrs['chr'].astype(str)+':'+dmrs['start'].astype(str)+'-'+dmrs['stop'].astype(str)
 
     dmrs[['chr','start','stop']].to_csv(dmrmet_path+'.bed', sep='\t', header=False, index=False)
-    os.system(os.path.realpath(__file__).replace('metilene3.py','bedavg')+' '+met+' '+dmrmet_path+'.bed  '+dmrmet_path)
+    prefix, metinput = inputCommand(argparse.Namespace(input=met, subset=subset, groupinfo=grp))
+    os.system(prefix+shlex.quote(os.path.realpath(__file__).replace('metilene3.py','bedavg'))+' '+metinput+' '+shlex.quote(dmrmet_path+'.bed')+' '+shlex.quote(dmrmet_path))
     os.remove(dmrmet_path+".bed")
     
     from scipy.stats import kruskal
     dmrmet = pd.read_table(dmrmet_path, index_col=0)
     grp = pd.read_table(grp, index_col=None).sort_values(['Group','ID'])
+    grp = grp.loc[grp['ID'].isin(dmrmet.columns)]
     grp.index = range(len(grp.index))
     grprange = []
     begin = 0
@@ -818,7 +852,7 @@ def clustering(mout, args):
         return (None, None)
 
     reportPath = args.output+'/'
-    sids = [str(i) for i in pd.read_table(args.input, nrows=0).columns[2:]]
+    sids = [str(i) for i in inputHeader(args).columns[2:]]
     
     finalCls = pd.DataFrame([i.split('|') for i in cls[0]]).sum()
     finalCls.index = sids
@@ -1113,6 +1147,7 @@ def report_sup(args, start_time, end_time, mout):
 
     final_html = final_html.replace('<div>Number of supervised DMRs: XXX</div><br>', 'Number of supervised DMRs: '+str(mout.shape[0])+'</div><br>')
     finalCls = pd.read_table(args.groupinfo, index_col='ID')[['Group']]
+    finalCls = finalCls.loc[inputHeader(args).columns[2:]]
     finalCls['Group'] = finalCls['Group'].astype(str)
     if args.genesets and args.annotation:
         gseapopup, tables = gsea(args, finalCls, mout)
@@ -1174,7 +1209,7 @@ def report_nocls(args, start_time, end_time, unmout):
     final_html = final_html.replace('<button onclick="showPopup(\'popupTree\')">Click to show the figures</button>', '')
     final_html = final_html.replace('<button onclick="showPopup(\'popupCluster\')">Click to show the Table of clusters</button>', '')
 
-    finalCls = pd.read_table(args.input, nrows=0).T[2:]
+    finalCls = inputHeader(args).T[2:]
     finalCls['Group'] = finalCls.index
     finalCls['Group'] = finalCls['Group'].astype(str)
     if args.genesets and args.annotation:
@@ -1212,6 +1247,12 @@ def checkParams(args):
         pd.read_table(args.input, nrows=1)
     except:
         msg = 'ERROR: please check the format of the input matrix and provide a tab-separated tsv file.'
+
+    if msg is None and (args.subset is not None or args.groupinfo):
+        try:
+            inputHeader(args)
+        except (ValueError, OSError) as error:
+            msg = 'ERROR: '+str(error)
          
     return msg
 
@@ -1313,7 +1354,7 @@ def main():
                     print('Warning: No cluster found. Please check the data or use smaller -D and/or -n and/or smaller -w for clustering.')
                     end_time = time.ctime()
                     headerfile = args.output+'/'+args.input.split('/')[-1]+'.header'
-                    finalCls = pd.read_table(args.input, nrows=0).T[2:]
+                    finalCls = inputHeader(args).T[2:]
                     finalCls['Group'] = finalCls.index
                     finalCls['Group_ID'] = range(len(finalCls.index))
                     finalCls.to_csv(args.output+'/group-ID.tsv', sep='\t', index=False)
@@ -1326,7 +1367,7 @@ def main():
                 print('Warning: No cluster found. Please check the data or use smaller -D and/or -n and/or smaller -w for clustering.')
                 end_time = time.ctime()
                 headerfile = args.output+'/'+args.input.split('/')[-1]+'.header'
-                finalCls = pd.read_table(args.input, nrows=0).T[2:]
+                finalCls = inputHeader(args).T[2:]
                 finalCls['Group'] = finalCls.index
                 finalCls['Group_ID'] = range(len(finalCls.index))
                 finalCls.to_csv(args.output+'/group-ID.tsv', sep='\t', index=False)
@@ -1369,4 +1410,5 @@ def main():
         if not args.skipMetilene:
             os.system("rm "+args.output+"/*.header")
         
-main()
+if __name__ == '__main__':
+    main()
