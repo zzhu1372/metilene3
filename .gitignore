@@ -1,0 +1,8 @@
+# pixi environments
+.pixi/*
+!.pixi/config.toml
+src/*.o
+/metilene
+/bedavg
+demo_output/
+*.sif
